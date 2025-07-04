@@ -3,6 +3,7 @@ package org.example.eiscuno.view;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -19,7 +20,7 @@ public class GameUnoStage extends Stage {
      * @throws IOException if an error occurs while loading the FXML file for the game interface.
      */
     public GameUnoStage() throws IOException {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/org/example/eiscuno/game-uno-view.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/org/example/eiscuno/GameUnoView.fxml"));
         Parent root;
         try {
             root = loader.load();
@@ -32,6 +33,9 @@ public class GameUnoStage extends Stage {
         setTitle("EISC Uno"); // Sets the title of the stage
         setScene(scene); // Sets the scene for the stage
         setResizable(false); // Disallows resizing of the stage
+
+        this.getIcons().add(new Image(getClass().getResource("/org/example/eiscuno/favicon.png").toExternalForm()));
+
         show(); // Displays the stage
     }
 

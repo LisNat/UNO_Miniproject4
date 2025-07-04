@@ -16,6 +16,9 @@ public class GameUno implements IGameUno {
     private Deck deck;
     private Table table;
 
+    private boolean skipHumanTurn = false;
+    private boolean skipMachineTurn = false;
+
     /**
      * Constructs a new GameUno instance.
      *
@@ -44,6 +47,42 @@ public class GameUno implements IGameUno {
                 machinePlayer.addCard(this.deck.takeCard());
             }
         }
+        // Cualquier carta como Carta inicial
+        //this.table.addCardOnTheTable(this.deck.takeCard());
+
+        // Solo cartas normales pueden ser iniciales
+        Card initialCard;
+        do {
+            initialCard = this.deck.takeCard();
+        } while (isSpecialCard(initialCard));
+
+        this.table.addCardOnTheTable(initialCard);
+
+    }
+
+    private boolean isSpecialCard(Card card) {
+        String value = card.getValue();
+        return value == null || value.equals("+2") || value.equals("+4") || value.equals("SKIP") || value.equals("WILD") || value.equals("REVERSE");
+    }
+
+    public boolean isSkipHumanTurn() {
+        return skipHumanTurn;
+    }
+    public void clearSkipHumanTurn() {
+        this.skipHumanTurn = false;
+    }
+
+    public boolean isSkipMachineTurn() {
+        return skipMachineTurn;
+    }
+    public void clearSkipMachineTurn() {
+        this.skipMachineTurn = false;
+    }
+
+    public Card drawCard(Player player) {
+        Card card = this.deck.takeCard();
+        player.addCard(card);
+        return card;
     }
 
     /**
@@ -67,6 +106,45 @@ public class GameUno implements IGameUno {
     @Override
     public void playCard(Card card) {
         this.table.addCardOnTheTable(card);
+
+        Player opponent = humanPlayer.getCardsPlayer().contains(card) ?
+                machinePlayer : humanPlayer;
+
+        // Manejamos los efectos especiales (solo estan funcionales los sip y reverse)
+        switch(card.getValue()) {
+            case "+2":
+                eatCard(opponent, 2); // Falta
+                break;
+
+            case "+4":
+                eatCard(opponent, 4); // Falta
+                // No break, porque también es WILD
+
+            case "WILD":
+                // La lógica de cambio de color se maneja en el controlador
+                break;
+
+            case "SKIP":
+                if (opponent == humanPlayer) {
+                    System.out.println("Máquina usó SKIP: humano pierde turno");
+                    skipHumanTurn = true;
+                } else {
+                    System.out.println("Humano usó SKIP: máquina pierde turno");
+                    skipMachineTurn = true;
+                }
+                break;
+
+            case "REVERSE":
+                // En un juego de 2 jugadores, REVERSE funciona como SKIP
+                if (opponent == humanPlayer) {
+                    System.out.println("Máquina usó REVERSE: humano pierde turno");
+                    skipHumanTurn = true;
+                } else {
+                    System.out.println("Humano usó REVERSE: máquina pierde turno");
+                    skipMachineTurn = true;
+                }
+                break;
+        }
     }
 
     /**
@@ -111,4 +189,27 @@ public class GameUno implements IGameUno {
     public Boolean isGameOver() {
         return null;
     }
+
+    public boolean canPlay(Card card) {
+        try {
+            Card topCard = this.table.getCurrentCardOnTheTable();
+
+            // Comodines siempre se pueden jugar
+            if ("WILD".equals(card.getValue()) || "+4".equals(card.getValue())) {
+                return true;
+            }
+
+            // Coincide en color o en valor
+            return (card.getColor() != null && card.getColor().equals(topCard.getColor())) ||
+                    (card.getValue() != null && card.getValue().equals(topCard.getValue()));
+
+        } catch (IndexOutOfBoundsException e) {
+            return !isSpecialCard(card); // si no hay carta en mesa, solo normales
+        }
+    }
+
+    public Player getMachinePlayer() {
+        return this.machinePlayer;
+    }
+
 }
