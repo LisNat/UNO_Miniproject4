@@ -69,4 +69,10 @@ public class Card {
     public void setColor(String color) {
         this.color = color;
     }
+
+    public boolean canBePlayedOver(Card topCard) {
+        return this.color.equals(topCard.getColor()) ||
+                this.value.equals(topCard.getValue()) ||
+                this.color.equals("WILD");
+    }
 }

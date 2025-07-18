@@ -1,5 +1,7 @@
 package org.example.eiscuno.model.game;
 
+import javafx.application.Platform;
+import javafx.scene.control.Alert;
 import org.example.eiscuno.model.card.Card;
 import org.example.eiscuno.model.deck.Deck;
 import org.example.eiscuno.model.player.Player;
@@ -9,7 +11,7 @@ import org.example.eiscuno.model.table.Table;
  * Represents a game of Uno.
  * This class manages the game logic and interactions between players, deck, and the table.
  */
-public class GameUno implements IGameUno {
+public class GameUno implements IGameUno  {
 
     private Player humanPlayer;
     private Player machinePlayer;
@@ -18,6 +20,8 @@ public class GameUno implements IGameUno {
 
     private boolean skipHumanTurn = false;
     private boolean skipMachineTurn = false;
+
+    private boolean gameOver = false;
 
     /**
      * Constructs a new GameUno instance.
@@ -80,6 +84,28 @@ public class GameUno implements IGameUno {
     }
 
     public Card drawCard(Player player) {
+        if (deck.isEmpty()) {
+            System.out.println("⚠ Mazo vacío. No se pueden tomar más cartas.");
+
+            // Validamos si nadie puede jugar
+            if (!canAnyPlayerPlay()) {
+                System.out.println("El juego termina. Nadie puede jugar más.");
+
+                // Mostramos una alerta indicando lo que pasa
+                Platform.runLater(() -> {
+                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                    alert.setTitle("Fin del Juego");
+                    alert.setHeaderText("¡El mazo se agotó!");
+                    alert.setContentText("Nadie puede jugar más. El juego ha terminado.");
+                    alert.showAndWait();
+
+                    Platform.exit();
+                });
+            }
+
+            return null;
+        }
+
         Card card = this.deck.takeCard();
         player.addCard(card);
         return card;
@@ -95,6 +121,14 @@ public class GameUno implements IGameUno {
     public void eatCard(Player player, int numberOfCards) {
         for (int i = 0; i < numberOfCards; i++) {
             player.addCard(this.deck.takeCard());
+        }
+        // Llamar al listener para actualizar visualmente
+        if (listener != null) {
+            if (player == humanPlayer) {
+                Platform.runLater(listener::onHumanCardsChanged);
+            } else {
+                Platform.runLater(listener::onMachineCardsChanged);
+            }
         }
     }
 
@@ -113,12 +147,27 @@ public class GameUno implements IGameUno {
         // Manejamos los efectos especiales (solo estan funcionales los sip y reverse)
         switch(card.getValue()) {
             case "+2":
-                eatCard(opponent, 2); // Falta
+                eatCard(opponent, 2);
+                // Pierde turno el oponente
+                if (opponent == humanPlayer) {
+                    skipHumanTurn = true;
+                    System.out.println("Máquina jugó +2. Humano roba 2 cartas y pierde turno.");
+                } else {
+                    skipMachineTurn = true;
+                    System.out.println("Humano jugó +2. Máquina roba 2 cartas y pierde turno.");
+                }
                 break;
 
             case "+4":
-                eatCard(opponent, 4); // Falta
-                // No break, porque también es WILD
+                eatCard(opponent, 4);
+                if (opponent == humanPlayer) {
+                    skipHumanTurn = true;
+                    System.out.println("Máquina jugó +4. Humano roba 4 cartas y pierde turno.");
+                } else {
+                    skipMachineTurn = true;
+                    System.out.println("Humano jugó +4. Máquina roba 4 cartas y pierde turno.");
+                }
+                break;
 
             case "WILD":
                 // La lógica de cambio de color se maneja en el controlador
@@ -187,7 +236,11 @@ public class GameUno implements IGameUno {
      */
     @Override
     public Boolean isGameOver() {
-        return null;
+        return gameOver;
+    }
+
+    public void setGameOver(boolean gameOver) {
+        this.gameOver = gameOver;
     }
 
     public boolean canPlay(Card card) {
@@ -210,6 +263,17 @@ public class GameUno implements IGameUno {
 
     public Player getMachinePlayer() {
         return this.machinePlayer;
+    }
+
+    private IGameEventListener listener;
+
+    public void setGameEventListener(IGameEventListener listener) {
+        this.listener = listener;
+    }
+
+    public boolean canAnyPlayerPlay() {
+        Card topCard = table.getCurrentCardOnTheTable();
+        return humanPlayer.hasPlayableCard(topCard) || machinePlayer.hasPlayableCard(topCard);
     }
 
 }

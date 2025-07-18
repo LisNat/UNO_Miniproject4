@@ -1,7 +1,10 @@
 package org.example.eiscuno.controller;
 
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceDialog;
 import javafx.scene.image.Image;
@@ -9,9 +12,12 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import org.example.eiscuno.model.card.Card;
 import org.example.eiscuno.model.deck.Deck;
 import org.example.eiscuno.model.game.GameUno;
+import org.example.eiscuno.model.game.IGameEventListener;
+import org.example.eiscuno.model.game.ThreadCheckGameOver;
 import org.example.eiscuno.model.machine.ThreadPlayMachine;
 import org.example.eiscuno.model.machine.ThreadSingUNOMachine;
 import org.example.eiscuno.model.player.Player;
@@ -24,7 +30,7 @@ import java.util.Optional;
 /**
  * Controller class for the Uno game.
  */
-public class GameUnoController {
+public class GameUnoController implements IGameEventListener {
 
     @FXML
     private GridPane gridPaneCardsMachine;
@@ -41,6 +47,8 @@ public class GameUnoController {
     @FXML
     private Button buttonExit;
 
+    @FXML
+    private Button buttonUno;
     private Player humanPlayer;
     private Player machinePlayer;
     private Deck deck;
@@ -54,12 +62,20 @@ public class GameUnoController {
 
     private boolean skipPlayerTurn = false;
 
+    private boolean unoPressed = false;
+    private Timeline unoTimer;
+
+    private ThreadCheckGameOver threadCheckGameOver;
+
     /**
      * Initializes the controller.
      */
     @FXML
     public void initialize() {
         initVariables();
+
+        this.gameUno.setGameEventListener(this);
+
         this.gameUno.startGame();
 
         // Mostramos la carta inicial en la mesa
@@ -76,6 +92,9 @@ public class GameUnoController {
 
         threadPlayMachine = new ThreadPlayMachine(this.table, this.machinePlayer, this.tableImageView, this.gameUno, this.deck, this);
         threadPlayMachine.start();
+
+        threadCheckGameOver = new ThreadCheckGameOver(humanPlayer, machinePlayer, this, gameUno);
+        threadCheckGameOver.start();
 
         printCardsMachinePlayer();
     }
@@ -128,6 +147,8 @@ public class GameUnoController {
                         handleWildCard();
                     }
 
+                    checkUnoOpportunity();
+
                     threadPlayMachine.setHasPlayerPlayed(true);
                     printCardsHumanPlayer();
 
@@ -138,7 +159,8 @@ public class GameUnoController {
 
             this.gridPaneCardsPlayer.add(cardImageView, i, 0);
         }
-
+        // Verificamos si debe aparecer el botón UNO
+        checkUnoOpportunity();
     }
 
     public void printCardsMachinePlayer() {
@@ -159,6 +181,16 @@ public class GameUnoController {
 
             gridPaneCardsMachine.add(cardBack, i, 0);
         }
+    }
+
+    @Override
+    public void onHumanCardsChanged() {
+        printCardsHumanPlayer();
+    }
+
+    @Override
+    public void onMachineCardsChanged() {
+        printCardsMachinePlayer();
     }
 
 
@@ -233,7 +265,15 @@ public class GameUnoController {
      */
     @FXML
     void onHandleUno(ActionEvent event) {
-        // Implement logic to handle Uno event here
+        unoPressed = true;
+
+        if (unoTimer != null) {
+            unoTimer.stop();
+        }
+
+        buttonUno.setVisible(false);
+        System.out.println("Humano declaró UNO a tiempo");
+        gameUno.haveSungOne("HUMAN_PLAYER");
     }
 
     @FXML
@@ -261,6 +301,45 @@ public class GameUnoController {
                 e.printStackTrace();
             }
         });
+    }
+
+    private void startUnoTimer() {
+        unoPressed = false;
+
+        int delay = 2000 + (int)(Math.random() * 2000); // 2000–4000 ms
+
+        unoTimer = new Timeline(new KeyFrame(Duration.millis(delay), e -> {
+            if (!unoPressed) {
+                System.out.println("Humano no presionó UNO a tiempo. Penalizado.");
+                gameUno.drawCard(humanPlayer);
+                printCardsHumanPlayer(); // Actualiza la vista
+            }
+            buttonUno.setVisible(false); // Ocultar de todos modos
+        }));
+        unoTimer.setCycleCount(1);
+        unoTimer.play();
+    }
+
+    private void checkUnoOpportunity() {
+        if (humanPlayer.getCardsPlayer().size() == 1) {
+            buttonUno.setVisible(true);
+            startUnoTimer();
+        } else {
+            buttonUno.setVisible(false);
+            if (unoTimer != null) unoTimer.stop();
+        }
+    }
+
+    public void showGameOver(String message) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Fin del Juego");
+        alert.setHeaderText(message);
+        alert.setContentText("Presiona aceptar.");
+        alert.showAndWait();
+
+        // Cierra la ventana del juego
+        Stage stage = (Stage) buttonExit.getScene().getWindow();
+        stage.close();
     }
 
 }

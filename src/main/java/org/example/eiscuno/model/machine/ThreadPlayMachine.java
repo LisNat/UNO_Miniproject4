@@ -24,22 +24,26 @@ public class ThreadPlayMachine extends Thread {
         this.tableImageView = tableImageView;
         this.gameUno = gameUno;
         this.deck = deck;
-        //this.hasPlayerPlayed = false;
+        this.hasPlayerPlayed = false;
         this.gameUnocontroller = gameUnocontroller;
     }
 
     public void run() {
-        while (true) {
+        while (!gameUno.isGameOver()) {
             if (hasPlayerPlayed) {
                 try {
                     Thread.sleep(2000);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    //e.printStackTrace();
+                    throw new RuntimeException(e);
+                }
+
+                if (gameUno.isGameOver()) {
+                    return;
                 }
 
                 // Verificamos si la máquina pierde turno
                 if (gameUno.isSkipMachineTurn()) {
-                    System.out.println("⛔ Máquina pierde el turno por SKIP o REVERSE");
                     gameUno.clearSkipMachineTurn();
                     hasPlayerPlayed = false; // Pasa turno al humano
                     continue;
@@ -50,7 +54,6 @@ public class ThreadPlayMachine extends Thread {
 
                 // Verificamos si el humano fue saltado (SKIP o REVERSE)
                 if (gameUno.isSkipHumanTurn()) {
-                    System.out.println("Máquina repite turno por SKIP o REVERSE");
                     gameUno.clearSkipHumanTurn();
                     continue;
                 }else {

@@ -63,4 +63,13 @@ public class Player implements IPlayer {
     public String getTypePlayer() {
         return typePlayer;
     }
+
+    public boolean hasPlayableCard(Card topCard) {
+        for (Card card : cardsPlayer) {
+            if (card.canBePlayedOver(topCard)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

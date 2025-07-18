@@ -14,7 +14,6 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.text.Font?>
 
-
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="500.0" prefWidth="700.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.eiscuno.controller.GameUnoController">
    <children>
       <ImageView fitHeight="500.0" fitWidth="700.0" pickOnBounds="true">
@@ -74,12 +73,14 @@
          <right>
             <Pane prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
                <children>
-                  <Button fx:id="buttonUno" layoutX="50.0" layoutY="100.0" mnemonicParsing="false" onAction="#onHandleUno" prefHeight="50.0" prefWidth="100.0" style="-fx-background-color: transparent;" text="UNO" />
-                  <ImageView fitHeight="150.0" fitWidth="120.0" layoutX="32.0" layoutY="86.0" pickOnBounds="true" preserveRatio="true">
-                     <image>
-                        <Image url="@images/button_uno.png" />
-                     </image>
-                  </ImageView>
+                  <Button fx:id="buttonUno" layoutX="50.0" layoutY="100.0" mnemonicParsing="false" onAction="#onHandleUno" prefHeight="50.0" prefWidth="100.0" style="-fx-background-color: transparent;" text="UNO">
+                     <graphic>
+                        <ImageView fitHeight="150.0" fitWidth="120.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@images/button_uno.png" />
+                           </image>
+                        </ImageView>
+                     </graphic></Button>
                </children>
             </Pane>
          </right>
