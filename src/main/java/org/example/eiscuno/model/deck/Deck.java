@@ -1,5 +1,6 @@
 package org.example.eiscuno.model.deck;
 
+import org.example.eiscuno.model.exceptions.EmptyDeckException;
 import org.example.eiscuno.model.unoenum.EISCUnoEnum;
 import org.example.eiscuno.model.card.Card;
 
@@ -103,9 +104,9 @@ public class Deck {
      * @return the card from the top of the deck
      * @throws IllegalStateException if the deck is empty
      */
-    public Card takeCard() {
+    public Card takeCard() throws EmptyDeckException {
         if (deckOfCards.isEmpty()) {
-            throw new IllegalStateException("No hay más cartas en el mazo.");
+            throw new EmptyDeckException("El mazo está vacío, no se puede tomar más cartas.");
         }
         return deckOfCards.pop();
     }

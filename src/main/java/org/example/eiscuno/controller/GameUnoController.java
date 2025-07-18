@@ -2,6 +2,7 @@ package org.example.eiscuno.controller;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
@@ -15,6 +16,9 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 import org.example.eiscuno.model.card.Card;
 import org.example.eiscuno.model.deck.Deck;
+import org.example.eiscuno.model.exceptions.EmptyDeckException;
+import org.example.eiscuno.model.exceptions.IllegalGameStateException;
+import org.example.eiscuno.model.exceptions.InvalidCardPlayException;
 import org.example.eiscuno.model.game.GameUno;
 import org.example.eiscuno.model.game.IGameEventListener;
 import org.example.eiscuno.model.game.ThreadCheckGameOver;
@@ -138,20 +142,42 @@ public class GameUnoController implements IGameEventListener {
                 }
 
                 if (gameUno.canPlay(card)) {
-                    gameUno.playCard(card);
-                    tableImageView.setImage(card.getImage());
-                    humanPlayer.removeCard(findPosCardsHumanPlayer(card));
+                    try {
+                        gameUno.playCard(card);
+                        tableImageView.setImage(card.getImage());
+                        humanPlayer.removeCard(findPosCardsHumanPlayer(card));
 
-                    // Manejamos cambio de color para cartas WILD (por ahora así oki)
-                    if ("WILD".equals(card.getValue()) || "+4".equals(card.getValue())) {
-                        handleWildCard();
+                        if ("WILD".equals(card.getValue()) || "+4".equals(card.getValue())) {
+                            handleWildCard();
+                        }
+
+                        if (!gameUno.isGameOver()) {
+                            checkUnoOpportunity();
+                        }
+
+                        threadPlayMachine.setHasPlayerPlayed(true);
+                        printCardsHumanPlayer();
+
+                    } catch (IllegalGameStateException e) {
+                        System.out.println("Error: " + e.getMessage());
+                        Platform.runLater(() -> {
+                            Alert alert = new Alert(Alert.AlertType.ERROR);
+                            alert.setTitle("Estado inválido del juego");
+                            alert.setHeaderText(null);
+                            alert.setContentText("No se puede jugar: " + e.getMessage());
+                            alert.showAndWait();
+                        });
                     }
-
-                    checkUnoOpportunity();
-
-                    threadPlayMachine.setHasPlayerPlayed(true);
-                    printCardsHumanPlayer();
-
+                    catch (InvalidCardPlayException e) {
+                        System.out.println("Jugada inválida: " + e.getMessage());
+                        Platform.runLater(() -> {
+                            Alert alert = new Alert(Alert.AlertType.WARNING);
+                            alert.setTitle("Jugada no permitida");
+                            alert.setHeaderText(null);
+                            alert.setContentText("No puedes jugar esa carta: " + e.getMessage());
+                            alert.showAndWait();
+                        });
+                    }
                 } else {
                     System.out.println("No puedes jugar esta carta: " + card.getValue() + " - " + card.getColor());
                 }
@@ -159,8 +185,10 @@ public class GameUnoController implements IGameEventListener {
 
             this.gridPaneCardsPlayer.add(cardImageView, i, 0);
         }
-        // Verificamos si debe aparecer el botón UNO
-        checkUnoOpportunity();
+        // Creo q no es totalmente necesaria
+        if (!gameUno.isGameOver()) {
+            checkUnoOpportunity();
+        }
     }
 
     public void printCardsMachinePlayer() {
@@ -242,21 +270,42 @@ public class GameUnoController implements IGameEventListener {
      */
     @FXML
     void onHandleTakeCard(ActionEvent event) {
-        if (gameUno == null || humanPlayer == null) {
-            System.out.println("Juego no iniciado correctamente.");
-            return;
+        try {
+            if (gameUno == null || humanPlayer == null) {
+                System.out.println("Juego no iniciado correctamente.");
+                return;
+            }
+
+            Card card = gameUno.drawCard(humanPlayer);
+            System.out.println("Robaste: " + card.getValue() + " " + card.getColor());
+
+            if (gameUno.canPlay(card)) {
+                System.out.println("¡Puedes jugar la carta robada!");
+            }
+
+            threadPlayMachine.setHasPlayerPlayed(true);
+            printCardsHumanPlayer();
+
+        } catch (EmptyDeckException e) {
+            // Manejo específico cuando el mazo está vacío - Desactivamos botón
+            System.out.println("🚨 " + e.getMessage());
+            buttonTakeCard.setDisable(true);
+
+            Platform.runLater(() -> {
+                Alert alert = new Alert(Alert.AlertType.WARNING);
+                alert.setTitle("Mazo Vacío");
+                alert.setHeaderText(null);
+                alert.setContentText(e.getMessage());
+                alert.showAndWait();
+            });
+
+        } catch (IllegalGameStateException e) {
+            System.out.println(e.getMessage());
+        } catch (Exception e) {
+            System.err.println("Error inesperado al robar carta: " + e.getMessage());
         }
-
-        Card card = gameUno.drawCard(humanPlayer);
-        System.out.println("Robaste una carta: " + card.getValue() + " " + card.getColor());
-
-        if (gameUno.canPlay(card)) {
-            System.out.println("¡Puedes jugar la carta robada!");
-        }
-
-        threadPlayMachine.setHasPlayerPlayed(true); // le da turno a la máquina
-        printCardsHumanPlayer(); // actualiza la mano del jugador
     }
+
 
     /**
      * Handles the action of saying "Uno".
@@ -304,30 +353,91 @@ public class GameUnoController implements IGameEventListener {
     }
 
     private void startUnoTimer() {
-        unoPressed = false;
+        try {
+            unoPressed = false;
 
-        int delay = 2000 + (int)(Math.random() * 2000); // 2000–4000 ms
-
-        unoTimer = new Timeline(new KeyFrame(Duration.millis(delay), e -> {
-            if (!unoPressed) {
-                System.out.println("Humano no presionó UNO a tiempo. Penalizado.");
-                gameUno.drawCard(humanPlayer);
-                printCardsHumanPlayer(); // Actualiza la vista
+            if (unoTimer != null) {
+                unoTimer.stop();
             }
-            buttonUno.setVisible(false); // Ocultar de todos modos
-        }));
-        unoTimer.setCycleCount(1);
-        unoTimer.play();
+
+            int delay = 2000 + (int) (Math.random() * 2000); // 2-4s
+
+            unoTimer = new Timeline(new KeyFrame(Duration.millis(delay), e -> {
+                try {
+                    if (!unoPressed && !gameUno.isGameOver()) {
+                        handleUnoPenalty();
+                    }
+                } catch (Exception ex) {
+                    System.err.println("Error inesperado en timer UNO: " + ex.getMessage());
+                } finally {
+                    buttonUno.setVisible(false);
+                    checkDeckEmptyStatus();
+                }
+            }));
+
+            unoTimer.setCycleCount(1);
+            unoTimer.play();
+        } catch (Exception e) {
+            System.err.println("Error al iniciar timer UNO: " + e.getMessage());
+        }
+    }
+
+    // Metodo para manejar la penalización
+    private void handleUnoPenalty() {
+        try {
+            System.out.println("¡No dijiste UNO a tiempo! Penalización aplicada.");
+            gameUno.drawCard(humanPlayer); // Intenta robar carta
+            printCardsHumanPlayer();
+
+        } catch (EmptyDeckException ex) {
+            System.out.println("No se pudo aplicar penalización: " + ex.getMessage());
+            Platform.runLater(() -> {
+                Alert alert = new Alert(Alert.AlertType.WARNING);
+                alert.setTitle("Mazo Vacío");
+                alert.setHeaderText(null);
+                alert.setContentText("No se pudo aplicar la penalización porque el mazo está vacío");
+                alert.showAndWait();
+            });
+        }
+    }
+
+    // Metodo para verificar estado del mazo
+    private void checkDeckEmptyStatus() {
+        Platform.runLater(() -> {
+            try {
+                buttonTakeCard.setDisable(gameUno.isDeckEmpty());
+            } catch (Exception ex) {
+                System.err.println("Error verificando estado del mazo: " + ex.getMessage());
+            }
+        });
     }
 
     private void checkUnoOpportunity() {
-        if (humanPlayer.getCardsPlayer().size() == 1) {
-            buttonUno.setVisible(true);
-            startUnoTimer();
-        } else {
-            buttonUno.setVisible(false);
-            if (unoTimer != null) unoTimer.stop();
-        }
+        Platform.runLater(() -> {
+            try {
+                // Verificación más robusta
+                boolean shouldShowUnoButton = humanPlayer != null &&
+                        humanPlayer.getCardsPlayer() != null &&
+                        humanPlayer.getCardsPlayer().size() == 1 &&
+                        !gameUno.isGameOver() &&
+                        !gameUno.isSkipHumanTurn();
+
+                if (shouldShowUnoButton) {
+                    System.out.println("Mostrando botón UNO - Cartas restantes: 1");
+                    buttonUno.setVisible(true);
+                    startUnoTimer();
+                } else {
+                    if (buttonUno.isVisible()) {
+                        buttonUno.setVisible(false);
+                        if (unoTimer != null) {
+                            unoTimer.stop();
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                System.err.println("Error en checkUnoOpportunity: " + e.getMessage());
+            }
+        });
     }
 
     public void showGameOver(String message) {

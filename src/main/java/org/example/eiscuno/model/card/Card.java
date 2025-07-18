@@ -71,8 +71,19 @@ public class Card {
     }
 
     public boolean canBePlayedOver(Card topCard) {
+        // WILD y +4 se pueden jugar siempre
+        if ("WILD".equals(this.value) || "+4".equals(this.value)) {
+            return true;
+        }
+
+        // Si alguna de las propiedades es null, no se puede jugar
+        if (this.color == null || topCard.getColor() == null ||
+                this.value == null || topCard.getValue() == null) {
+            return false;
+        }
+
+        // Regla normal: color o valor coincidente
         return this.color.equals(topCard.getColor()) ||
-                this.value.equals(topCard.getValue()) ||
-                this.color.equals("WILD");
+                this.value.equals(topCard.getValue());
     }
 }

@@ -4,8 +4,13 @@ import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import org.example.eiscuno.model.card.Card;
 import org.example.eiscuno.model.deck.Deck;
+import org.example.eiscuno.model.exceptions.EmptyDeckException;
+import org.example.eiscuno.model.exceptions.IllegalGameStateException;
+import org.example.eiscuno.model.exceptions.InvalidCardPlayException;
 import org.example.eiscuno.model.player.Player;
 import org.example.eiscuno.model.table.Table;
+
+import java.sql.SQLOutput;
 
 /**
  * Represents a game of Uno.
@@ -44,23 +49,29 @@ public class GameUno implements IGameUno  {
      */
     @Override
     public void startGame() {
-        for (int i = 0; i < 10; i++) {
-            if (i < 5) {
-                humanPlayer.addCard(this.deck.takeCard());
-            } else {
-                machinePlayer.addCard(this.deck.takeCard());
+        try {
+            for (int i = 0; i < 10; i++) {
+                if (i < 5) {
+                    humanPlayer.addCard(this.deck.takeCard());
+                } else {
+                    machinePlayer.addCard(this.deck.takeCard());
+                }
             }
+
+            // Cualquier carta como Carta inicial
+            //this.table.addCardOnTheTable(this.deck.takeCard());
+
+            // Solo cartas normales pueden ser iniciales
+            Card initialCard;
+            do {
+                initialCard = this.deck.takeCard();
+            } while (isSpecialCard(initialCard));
+
+            this.table.addCardOnTheTable(initialCard);
+
+        } catch (EmptyDeckException e) {
+            System.out.println("No se pudo iniciar el juego: " + e.getMessage());
         }
-        // Cualquier carta como Carta inicial
-        //this.table.addCardOnTheTable(this.deck.takeCard());
-
-        // Solo cartas normales pueden ser iniciales
-        Card initialCard;
-        do {
-            initialCard = this.deck.takeCard();
-        } while (isSpecialCard(initialCard));
-
-        this.table.addCardOnTheTable(initialCard);
 
     }
 
@@ -83,32 +94,41 @@ public class GameUno implements IGameUno  {
         this.skipMachineTurn = false;
     }
 
-    public Card drawCard(Player player) {
-        if (deck.isEmpty()) {
-            System.out.println("⚠ Mazo vacío. No se pueden tomar más cartas.");
-
-            // Validamos si nadie puede jugar
-            if (!canAnyPlayerPlay()) {
-                System.out.println("El juego termina. Nadie puede jugar más.");
-
-                // Mostramos una alerta indicando lo que pasa
-                Platform.runLater(() -> {
-                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                    alert.setTitle("Fin del Juego");
-                    alert.setHeaderText("¡El mazo se agotó!");
-                    alert.setContentText("Nadie puede jugar más. El juego ha terminado.");
-                    alert.showAndWait();
-
-                    Platform.exit();
-                });
-            }
-
-            return null;
+    public Card drawCard(Player player) throws EmptyDeckException{
+        if (isGameOver()) {
+            throw new IllegalGameStateException("No se pueden robar cartas: el juego ha terminado");
         }
 
-        Card card = this.deck.takeCard();
-        player.addCard(card);
-        return card;
+        if (deck.isEmpty()) {
+            System.out.println("Mazo vacío. No se pueden tomar más cartas.");
+
+            // Validamos si nadie puede jugar (el juego debe terminar)
+            if (!canAnyPlayerPlay()) {
+                endGameByEmptyDeck();
+            }
+            //return null;
+            throw new EmptyDeckException("El mazo está vacío");
+        }
+
+        try{
+            Card card = this.deck.takeCard();
+            player.addCard(card);
+            // Notificamos cambios si hay un listener
+            if (listener != null) {
+                Platform.runLater(() -> {
+                    if (player == humanPlayer) {
+                        listener.onHumanCardsChanged();
+                    } else {
+                        listener.onMachineCardsChanged();
+                    }
+                });
+            }
+            return card;
+        } catch (EmptyDeckException e){
+            // Esto en teoría nunca debería ocurrir porque ya verificamos antes isEmpty()
+            System.err.println("Error inesperado: " + e.getMessage());
+            throw e; // Relanzamos la excepción
+        }
     }
 
     /**
@@ -120,7 +140,12 @@ public class GameUno implements IGameUno  {
     @Override
     public void eatCard(Player player, int numberOfCards) {
         for (int i = 0; i < numberOfCards; i++) {
-            player.addCard(this.deck.takeCard());
+            try {
+                player.addCard(this.deck.takeCard());
+            } catch (EmptyDeckException e) {
+                System.out.println("No se pudo robar carta: " + e.getMessage());
+                break; // Salimos del ciclo si ya no hay cartas
+            }
         }
         // Llamar al listener para actualizar visualmente
         if (listener != null) {
@@ -138,17 +163,25 @@ public class GameUno implements IGameUno  {
      * @param card The card to be placed on the table.
      */
     @Override
-    public void playCard(Card card) {
+    public void playCard(Card card) throws InvalidCardPlayException {
+        if (gameOver) {
+            throw new IllegalGameStateException("No se puede jugar carta: el juego ha terminado.");
+        }
+
+        Card topCard = table.getCurrentCardOnTheTable();
+        if (!card.canBePlayedOver(topCard)) {
+            throw new InvalidCardPlayException("La carta seleccionada no puede jugarse sobre: " + topCard.getValue() + " - " + topCard.getColor());
+        }
+
         this.table.addCardOnTheTable(card);
 
         Player opponent = humanPlayer.getCardsPlayer().contains(card) ?
                 machinePlayer : humanPlayer;
 
-        // Manejamos los efectos especiales (solo estan funcionales los sip y reverse)
+        // Manejamos los efectos especiales
         switch(card.getValue()) {
             case "+2":
                 eatCard(opponent, 2);
-                // Pierde turno el oponente
                 if (opponent == humanPlayer) {
                     skipHumanTurn = true;
                     System.out.println("Máquina jugó +2. Humano roba 2 cartas y pierde turno.");
@@ -167,10 +200,6 @@ public class GameUno implements IGameUno  {
                     skipMachineTurn = true;
                     System.out.println("Humano jugó +4. Máquina roba 4 cartas y pierde turno.");
                 }
-                break;
-
-            case "WILD":
-                // La lógica de cambio de color se maneja en el controlador
                 break;
 
             case "SKIP":
@@ -196,6 +225,17 @@ public class GameUno implements IGameUno  {
         }
     }
 
+    private void endGameByEmptyDeck() {
+        Platform.runLater(() -> {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Fin del Juego");
+            alert.setHeaderText("¡El mazo se agotó!");
+            alert.setContentText("Nadie puede jugar más. El juego ha terminado.");
+            alert.showAndWait();
+            setGameOver(true);
+        });
+    }
+
     /**
      * Handles the scenario when a player shouts "Uno", forcing the other player to draw a card.
      *
@@ -203,10 +243,14 @@ public class GameUno implements IGameUno  {
      */
     @Override
     public void haveSungOne(String playerWhoSang) {
-        if (playerWhoSang.equals("HUMAN_PLAYER")) {
-            machinePlayer.addCard(this.deck.takeCard());
-        } else {
-            humanPlayer.addCard(this.deck.takeCard());
+        try {
+            if (playerWhoSang.equals("HUMAN_PLAYER")) {
+                machinePlayer.addCard(this.deck.takeCard());
+            } else {
+                humanPlayer.addCard(this.deck.takeCard());
+            }
+        } catch (EmptyDeckException e) {
+            System.out.println("No se pudo castigar por no decir UNO: " + e.getMessage());
         }
     }
 
@@ -241,6 +285,10 @@ public class GameUno implements IGameUno  {
 
     public void setGameOver(boolean gameOver) {
         this.gameOver = gameOver;
+    }
+
+    public boolean isDeckEmpty() {
+        return deck.isEmpty();
     }
 
     public boolean canPlay(Card card) {
