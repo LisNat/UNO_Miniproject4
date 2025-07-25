@@ -2,31 +2,45 @@ package org.example.eiscuno.model.card;
 
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import org.example.eiscuno.model.unoenum.EISCUnoEnum;
+
+import java.io.Serializable;
 
 /**
  * Represents a card in the Uno game.
  */
-public class Card {
+public class Card implements Serializable {
     private String url;
     private String value;
     private String color;
-    private Image image;
-    private ImageView cardImageView;
+
+    // No se tendrán en cuenta para la serialización.
+    private transient Image image;
+    private transient ImageView cardImageView;
 
     /**
      * Constructs a Card with the specified image URL and name.
      *
      * @param url the URL of the card image
      * @param value of the card
+     * @param color of the card
      */
     public Card(String url, String value, String color) {
         this.url = url;
         this.value = value;
         this.color = color;
+        //this.image = new Image(String.valueOf(getClass().getResource(url)));
+        //this.cardImageView = createCardImageView();
+        loadTransientFields();
+    }
+
+    /**
+     * Reconstructs transient fields after deserialization.
+     */
+    public void loadTransientFields() {
         this.image = new Image(String.valueOf(getClass().getResource(url)));
         this.cardImageView = createCardImageView();
     }
-
     /**
      * Creates and configures the ImageView for the card.
      *
@@ -69,6 +83,8 @@ public class Card {
     public void setColor(String color) {
         this.color = color;
     }
+
+    public String getUrl() {return url;}
 
     public boolean canBePlayedOver(Card topCard) {
         // WILD y +4 se pueden jugar siempre

@@ -25,6 +25,8 @@ import org.example.eiscuno.model.game.ThreadCheckGameOver;
 import org.example.eiscuno.model.machine.ThreadPlayMachine;
 import org.example.eiscuno.model.machine.ThreadSingUNOMachine;
 import org.example.eiscuno.model.player.Player;
+import org.example.eiscuno.model.serializable.GameUnoState;
+import org.example.eiscuno.model.serializable.SerializableFileHandler;
 import org.example.eiscuno.model.table.Table;
 
 import java.util.Arrays;
@@ -107,13 +109,30 @@ public class GameUnoController implements IGameEventListener {
      * Initializes the variables for the game.
      */
     private void initVariables() {
-        this.humanPlayer = new Player("HUMAN_PLAYER");
-        this.machinePlayer = new Player("MACHINE_PLAYER");
-        this.deck = new Deck();
-        this.table = new Table();
-        this.gameUno = new GameUno(this.humanPlayer, this.machinePlayer, this.deck, this.table);
+        // Para aplicar serialización:
+        GameUnoState loadedState = tryLoadGameUnoState();
+
+        if(loadedState != null) {
+            this.humanPlayer = loadedState.getHumanPlayer();
+            this.machinePlayer = loadedState.getMachinePlayer();
+            this.deck = loadedState.getDeck();
+            this.table = loadedState.getTable();
+            this.gameUno = new GameUno(this.humanPlayer, this.machinePlayer, this.deck, this.table);
+        } else {
+            this.humanPlayer = new Player("HUMAN_PLAYER");
+            this.machinePlayer = new Player("MACHINE_PLAYER");
+            this.deck = new Deck();
+            this.table = new Table();
+            this.gameUno = new GameUno(this.humanPlayer, this.machinePlayer, this.deck, this.table);
+        }
+
         this.posInitCardToShow = 0;
         this.posInitMachineCardToShow = 0;
+    }
+
+    private GameUnoState tryLoadGameUnoState() {
+        SerializableFileHandler handler = new SerializableFileHandler();
+        return (GameUnoState) handler.deserialize("GameUnoState.ser");
     }
 
     /**

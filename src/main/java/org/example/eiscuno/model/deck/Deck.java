@@ -7,10 +7,11 @@ import org.example.eiscuno.model.card.Card;
 import java.util.Collections;
 import java.util.Stack;
 
+import java.io.Serializable;
 /**
  * Represents a deck of Uno cards.
  */
-public class Deck {
+public class Deck implements Serializable {
     private Stack<Card> deckOfCards;
 
     /**
@@ -119,4 +120,8 @@ public class Deck {
     public boolean isEmpty() {
         return deckOfCards.isEmpty();
     }
+
+    public Stack<Card> getDeckOfCards() {return deckOfCards;}
+
+    public void setDeckOfCards(Stack<Card> deckOfCards) {this.deckOfCards = deckOfCards;}
 }

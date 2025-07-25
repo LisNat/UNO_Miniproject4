@@ -309,9 +309,15 @@ public class GameUno implements IGameUno  {
         }
     }
 
+    public Player getHumanPlayer() {return this.humanPlayer;}
+
     public Player getMachinePlayer() {
         return this.machinePlayer;
     }
+
+    public Deck getDeck() {return this.deck;}
+
+    public Table getTable() {return this.table;}
 
     private IGameEventListener listener;
 
