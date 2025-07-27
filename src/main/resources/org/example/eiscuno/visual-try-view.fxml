@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+
+<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.eiscuno.controller.WelcomeController">
+   <children>
+      <Label layoutX="205.0" layoutY="95.0" text="Ventana de Prueba">
+         <font>
+            <Font name="Barlow Condensed Medium" size="29.0" />
+         </font>
+      </Label>
+      <Button fx:id="playButton" layoutX="257.0" layoutY="209.0" mnemonicParsing="false" onAction="#handlePlayButton" text="Nuevo Juego" />
+      <Button fx:id="continueButton" layoutX="249.0" layoutY="270.0" mnemonicParsing="false" onAction="#handleContinueButton" text="Continuar Juego" />
+   </children>
+</AnchorPane>

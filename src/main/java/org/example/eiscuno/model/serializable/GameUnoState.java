@@ -48,12 +48,12 @@ public class GameUnoState implements Serializable {
     public boolean isHumanBlocked() { return isHumanBlocked; }
     public boolean isMachineBlocked() { return isMachineBlocked; }
 
-    public void setDeck(Deck deck) { this.deck = deck; }
+    /*public void setDeck(Deck deck) { this.deck = deck; }
     public void setTable(Table table) { this.table = table; }
     public void setHumanPlayer(Player humanPlayer) { this.humanPlayer = humanPlayer; }
     public void setMachinePlayer(Player machinePlayer) { this.machinePlayer = machinePlayer; }
     public void setGameOver(boolean gameOver) { this.gameOver = gameOver; }
     public void setHumanTurn(boolean humanTurn) { isHumanTurn = humanTurn; }
     public void setHumanBlocked(boolean humanBlocked) { isHumanBlocked = humanBlocked; }
-    public void setMachineBlocked(boolean machineBlocked) { isMachineBlocked = machineBlocked; }
+    public void setMachineBlocked(boolean machineBlocked) { isMachineBlocked = machineBlocked; }*/
 }

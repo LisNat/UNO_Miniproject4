@@ -28,7 +28,9 @@ import org.example.eiscuno.model.player.Player;
 import org.example.eiscuno.model.serializable.GameUnoState;
 import org.example.eiscuno.model.serializable.SerializableFileHandler;
 import org.example.eiscuno.model.table.Table;
+import org.example.eiscuno.view.WelcomeStage;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -110,14 +112,18 @@ public class GameUnoController implements IGameEventListener {
      */
     private void initVariables() {
         // Para aplicar serialización:
-        GameUnoState loadedState = tryLoadGameUnoState();
+        boolean continueGame = false;
 
-        if(loadedState != null) {
-            this.humanPlayer = loadedState.getHumanPlayer();
-            this.machinePlayer = loadedState.getMachinePlayer();
-            this.deck = loadedState.getDeck();
-            this.table = loadedState.getTable();
-            this.gameUno = new GameUno(this.humanPlayer, this.machinePlayer, this.deck, this.table);
+        try {
+            continueGame = WelcomeStage.getInstance().getWelcomeController().isOnContinue();
+            WelcomeStage.deleteInstance();
+        } catch (IOException e) {
+            System.out.println("Error obteniendo instancia de WelcomeStage: " +  e.getMessage());
+            continueGame = false;
+        }
+
+        if(continueGame) {
+            loadGameState();
         } else {
             this.humanPlayer = new Player("HUMAN_PLAYER");
             this.machinePlayer = new Player("MACHINE_PLAYER");
@@ -128,11 +134,6 @@ public class GameUnoController implements IGameEventListener {
 
         this.posInitCardToShow = 0;
         this.posInitMachineCardToShow = 0;
-    }
-
-    private GameUnoState tryLoadGameUnoState() {
-        SerializableFileHandler handler = new SerializableFileHandler();
-        return (GameUnoState) handler.deserialize("GameUnoState.ser");
     }
 
     /**
@@ -165,6 +166,7 @@ public class GameUnoController implements IGameEventListener {
                         gameUno.playCard(card);
                         tableImageView.setImage(card.getImage());
                         humanPlayer.removeCard(findPosCardsHumanPlayer(card));
+                        saveGameState();
 
                         if ("WILD".equals(card.getValue()) || "+4".equals(card.getValue())) {
                             handleWildCard();
@@ -296,6 +298,7 @@ public class GameUnoController implements IGameEventListener {
             }
 
             Card card = gameUno.drawCard(humanPlayer);
+            saveGameState();
             System.out.println("Robaste: " + card.getValue() + " " + card.getColor());
 
             if (gameUno.canPlay(card)) {
@@ -342,10 +345,12 @@ public class GameUnoController implements IGameEventListener {
         buttonUno.setVisible(false);
         System.out.println("Humano declaró UNO a tiempo");
         gameUno.haveSungOne("HUMAN_PLAYER");
+        saveGameState();
     }
 
     @FXML
     private void handleExit() {
+        saveGameState();
         Stage stage = (Stage) buttonExit.getScene().getWindow();
         stage.close();
     }
@@ -396,6 +401,7 @@ public class GameUnoController implements IGameEventListener {
 
             unoTimer.setCycleCount(1);
             unoTimer.play();
+            saveGameState();
         } catch (Exception e) {
             System.err.println("Error al iniciar timer UNO: " + e.getMessage());
         }
@@ -407,6 +413,7 @@ public class GameUnoController implements IGameEventListener {
             System.out.println("¡No dijiste UNO a tiempo! Penalización aplicada.");
             gameUno.drawCard(humanPlayer); // Intenta robar carta
             printCardsHumanPlayer();
+            saveGameState();
 
         } catch (EmptyDeckException ex) {
             System.out.println("No se pudo aplicar penalización: " + ex.getMessage());
@@ -471,4 +478,127 @@ public class GameUnoController implements IGameEventListener {
         stage.close();
     }
 
+    // Métodos para la serialización.
+
+    public void saveGameState() {
+        try {
+            GameUnoState state = new GameUnoState(
+                    gameUno.getDeck(),
+                    gameUno.getTable(),
+                    gameUno.getHumanPlayer(),
+                    gameUno.getMachinePlayer(),
+                    gameUno.isGameOver(),
+                    gameUno.isHumanTurn(),
+                    gameUno.isSkipHumanTurn(),
+                    gameUno.isSkipMachineTurn()
+            );
+
+            SerializableFileHandler handler = new SerializableFileHandler();
+            handler.serialize("GameUnoState.ser", state);
+            System.out.println("✅ Estado del juego guardado exitosamente.");
+
+        } catch (Exception e) {
+            System.err.println("❌ Error al guardar el estado del juego: " + e.getMessage());
+        }
+    }
+
+    public void loadGameState() {
+        try {
+            SerializableFileHandler handler = new SerializableFileHandler();
+            GameUnoState state = (GameUnoState) handler.deserialize("GameUnoState.ser");
+
+            if (state != null) {
+                System.out.println("✅ Estado del juego cargado exitosamente.");
+
+                // Restaurar lógica
+                //gameUno.setDeck(state.getDeck());
+                //gameUno.setTable(state.getTable());
+                //gameUno.setHumanPlayer(state.getHumanPlayer());
+                //gameUno.setMachinePlayer(state.getMachinePlayer());
+                //gameUno.setGameOver(state.isGameOver());
+                //gameUno.setHumanTurn(state.isHumanTurn());
+
+                // Restaurar lógica del juego
+                this.humanPlayer = state.getHumanPlayer();
+                this.machinePlayer = state.getMachinePlayer();
+                this.deck = state.getDeck();
+                this.table = state.getTable();
+
+                this.gameUno = new GameUno(humanPlayer, machinePlayer, deck, table);
+                gameUno.setGameOver(state.isGameOver());
+                gameUno.setHumanTurn(state.isHumanTurn());
+
+                if (state.isHumanBlocked()) {
+                    gameUno.skipHumanTurn();
+                } else {
+                    gameUno.clearSkipHumanTurn();
+                }
+
+                if (state.isMachineBlocked()) {
+                    gameUno.skipMachineTurn();
+                } else {
+                    gameUno.clearSkipMachineTurn();
+                }
+
+                // Restaurar ImageViews en las cartas
+                restoreImageViews();
+
+                // Restaurar parte visual
+                restoreVisualState();
+
+                // Verificar oportunidad de cantar UNO
+                checkUnoOpportunity();
+
+            } else {
+                System.out.println("⚠️ No se encontró estado válido para cargar.");
+            }
+
+        } catch (Exception e) {
+            System.err.println("❌ Error al cargar el estado del juego: " + e.getMessage());
+        }
+    }
+
+    private void restoreImageViews() {
+        for(Card card : humanPlayer.getCardsPlayer()) {
+            card.loadTransientFields();
+        }
+
+        for(Card card : machinePlayer.getCardsPlayer()) {
+            card.loadTransientFields();
+        }
+
+        Card topCard = table.getCurrentCardOnTheTable();
+        if(topCard != null) {
+            topCard.loadTransientFields();
+        }
+
+        for(Card card : deck.getDeckOfCards()) {
+            card.loadTransientFields();
+        }
+    }
+
+    private void restoreVisualState() {
+        try {
+            // Restaurar carta en la mesa
+            Card currentCard = gameUno.getTable().getCurrentCardOnTheTable();
+            if (currentCard != null) {
+                tableImageView.setImage(currentCard.getImage());
+            }
+
+            // Restaurar mano del jugador humano
+            printCardsHumanPlayer();
+
+            // Restaurar mano de la máquina (oculta)
+            printCardsMachinePlayer();
+
+            // Restaurar botón de robar carta
+            buttonTakeCard.setDisable(gameUno.isDeckEmpty());
+
+            // Restaurar visibilidad del botón UNO si aplica
+            checkUnoOpportunity();
+
+        } catch (Exception e) {
+            System.err.println("❌ Error al restaurar parte visual: " + e.getMessage());
+        }
+    }
 }
