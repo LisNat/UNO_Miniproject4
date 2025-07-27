@@ -80,17 +80,33 @@ public class GameUnoController implements IGameEventListener {
      */
     @FXML
     public void initialize() {
-        initVariables();
+        boolean isContinuingGame = false;
+
+        try {
+            isContinuingGame = WelcomeStage.getInstance().getWelcomeController().isOnContinue();
+        } catch (IOException e) {
+            System.out.println("Error con apartado visual." + e.getMessage());
+            isContinuingGame = false;
+        }
+
+        WelcomeStage.deleteInstance();
+
+        initVariables(isContinuingGame);
 
         this.gameUno.setGameEventListener(this);
 
-        this.gameUno.startGame();
+        if(!isContinuingGame) {
+            this.gameUno.startGame();
+        }
 
         // Mostramos la carta inicial en la mesa
         Card topCard = table.getCurrentCardOnTheTable();
-        tableImageView.setImage(topCard.getImage());
+        if(topCard != null) {
+            tableImageView.setImage(topCard.getImage());
+        }
 
         printCardsHumanPlayer();
+        printCardsMachinePlayer();
 
 
         // Iniciamos Hilos
@@ -103,24 +119,13 @@ public class GameUnoController implements IGameEventListener {
 
         threadCheckGameOver = new ThreadCheckGameOver(humanPlayer, machinePlayer, this, gameUno);
         threadCheckGameOver.start();
-
-        printCardsMachinePlayer();
     }
 
     /**
      * Initializes the variables for the game.
      */
-    private void initVariables() {
+    private void initVariables(boolean continueGame) {
         // Para aplicar serialización:
-        boolean continueGame = false;
-
-        try {
-            continueGame = WelcomeStage.getInstance().getWelcomeController().isOnContinue();
-            WelcomeStage.deleteInstance();
-        } catch (IOException e) {
-            System.out.println("Error obteniendo instancia de WelcomeStage: " +  e.getMessage());
-            continueGame = false;
-        }
 
         if(continueGame) {
             loadGameState();
