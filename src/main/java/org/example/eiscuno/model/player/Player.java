@@ -3,11 +3,12 @@ package org.example.eiscuno.model.player;
 import org.example.eiscuno.model.card.Card;
 
 import java.util.ArrayList;
+import java.io.Serializable;
 
 /**
  * Represents a player in the Uno game.
  */
-public class Player implements IPlayer {
+public class Player implements IPlayer, Serializable {
     private ArrayList<Card> cardsPlayer;
     private String typePlayer;
 

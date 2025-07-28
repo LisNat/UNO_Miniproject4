@@ -3,11 +3,12 @@ package org.example.eiscuno.model.table;
 import org.example.eiscuno.model.card.Card;
 
 import java.util.ArrayList;
+import java.io.Serializable;
 
 /**
  * Represents the table in the Uno game where cards are played.
  */
-public class Table {
+public class Table implements Serializable {
     private ArrayList<Card> cardsTable;
 
     /**
@@ -38,4 +39,6 @@ public class Table {
         }
         return this.cardsTable.get(this.cardsTable.size()-1);
     }
+
+    public ArrayList<Card> getCardsTable() {return this.cardsTable;}
 }
