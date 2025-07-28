@@ -310,27 +310,45 @@ public class GameUno implements IGameUno  {
         }
     }
 
-    public Player getHumanPlayer() {return this.humanPlayer;}
+    public Player getHumanPlayer() {
+        return this.humanPlayer;
+    }
 
-    public void setHumanPlayer(Player humanPlayer) {this.humanPlayer = humanPlayer;}
+    public void setHumanPlayer(Player humanPlayer) {
+        this.humanPlayer = humanPlayer;
+    }
 
-    public boolean isHumanTurn() {return this.humanTurn;}
+    public boolean isHumanTurn() {
+        return this.humanTurn;
+    }
 
-    public void setHumanTurn(boolean humanTurn) {this.humanTurn = humanTurn;}
+    public void setHumanTurn(boolean humanTurn) {
+        this.humanTurn = humanTurn;
+    }
 
     public Player getMachinePlayer() {
         return this.machinePlayer;
     }
 
-    public void setMachinePlayer(Player machinePlayer) {this.machinePlayer = machinePlayer;}
+    public void setMachinePlayer(Player machinePlayer) {
+        this.machinePlayer = machinePlayer;
+    }
 
-    public Deck getDeck() {return this.deck;}
+    public Deck getDeck() {
+        return this.deck;
+    }
 
-    public void setDeck(Deck deck) {this.deck = deck;}
+    public void setDeck(Deck deck) {
+        this.deck = deck;
+    }
 
-    public Table getTable() {return this.table;}
+    public Table getTable() {
+        return this.table;
+    }
 
-    public void setTable(Table table) {this.table = table;}
+    public void setTable(Table table) {
+        this.table = table;
+    }
 
     private IGameEventListener listener;
 
@@ -343,8 +361,12 @@ public class GameUno implements IGameUno  {
         return humanPlayer.hasPlayableCard(topCard) || machinePlayer.hasPlayableCard(topCard);
     }
 
-    public void skipHumanTurn() {this.skipHumanTurn = true;}
+    public void skipHumanTurn() {
+        this.skipHumanTurn = true;
+    }
 
-    public void skipMachineTurn() {this.skipMachineTurn = true;}
+    public void skipMachineTurn() {
+        this.skipMachineTurn = true;
+    }
 
 }

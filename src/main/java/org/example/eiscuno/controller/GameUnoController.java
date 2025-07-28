@@ -513,10 +513,10 @@ public class GameUnoController implements IGameEventListener {
 
             SerializableFileHandler handler = new SerializableFileHandler();
             handler.serialize("GameUnoState.ser", state);
-            System.out.println("✅ Estado del juego guardado exitosamente.");
+            System.out.println("Estado del juego guardado exitosamente.");
 
         } catch (Exception e) {
-            System.err.println("❌ Error al guardar el estado del juego: " + e.getMessage());
+            System.err.println("Error al guardar el estado del juego: " + e.getMessage());
         }
     }
 
@@ -526,7 +526,7 @@ public class GameUnoController implements IGameEventListener {
             GameUnoState state = (GameUnoState) handler.deserialize("GameUnoState.ser");
 
             if (state != null) {
-                System.out.println("✅ Estado del juego cargado exitosamente.");
+                System.out.println("Estado del juego cargado exitosamente.");
 
                 // Restaurar lógica
                 //gameUno.setDeck(state.getDeck());
@@ -568,11 +568,11 @@ public class GameUnoController implements IGameEventListener {
                 checkUnoOpportunity();
 
             } else {
-                System.out.println("⚠️ No se encontró estado válido para cargar.");
+                System.out.println("No se encontró estado válido para cargar.");
             }
 
         } catch (Exception e) {
-            System.err.println("❌ Error al cargar el estado del juego: " + e.getMessage());
+            System.err.println("Error al cargar el estado del juego: " + e.getMessage());
         }
     }
 
@@ -616,7 +616,7 @@ public class GameUnoController implements IGameEventListener {
             checkUnoOpportunity();
 
         } catch (Exception e) {
-            System.err.println("❌ Error al restaurar parte visual: " + e.getMessage());
+            System.err.println("Error al restaurar parte visual: " + e.getMessage());
         }
     }
 
