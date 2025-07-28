@@ -5,6 +5,9 @@ import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceDialog;
@@ -163,7 +166,7 @@ public class GameUnoController implements IGameEventListener {
             cardImageView.setOnMouseClicked((MouseEvent event) -> {
                 if (gameUno.isSkipHumanTurn()) {
                     System.out.println("Pierdes el turno, no puedes jugar.");
-                    return; // Evita cualquier acción si el humano debe saltar turno
+                    return;
                 }
 
                 if (gameUno.canPlay(card)) {
@@ -471,16 +474,26 @@ public class GameUnoController implements IGameEventListener {
         });
     }
 
-    public void showGameOver(String message) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Fin del Juego");
-        alert.setHeaderText(message);
-        alert.setContentText("Presiona aceptar.");
-        alert.showAndWait();
+    public void showGameOver(boolean playerWon) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/org/example/eiscuno/EndGameUnoView.fxml"));
+            Parent root = loader.load();
 
-        // Cierra la ventana del juego
-        Stage stage = (Stage) buttonExit.getScene().getWindow();
-        stage.close();
+            EndGameUnoController controller = loader.getController();
+            controller.setResult(playerWon);
+
+            Stage stage = new Stage();
+            stage.setScene(new Scene(root));
+            stage.setTitle("Game Over");
+            stage.show();
+
+            Stage currentStage = (Stage) tableImageView.getScene().getWindow();
+            currentStage.close();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.out.println("No se pudo cargar la pantalla de fin del juego.");
+        }
     }
 
     // Métodos para la serialización.
@@ -606,4 +619,6 @@ public class GameUnoController implements IGameEventListener {
             System.err.println("❌ Error al restaurar parte visual: " + e.getMessage());
         }
     }
+
+
 }
