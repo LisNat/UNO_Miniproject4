@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="500.0" prefWidth="700.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.eiscuno.controller.GameUnoController">
+   <children>
+      <ImageView fitHeight="500.0" fitWidth="700.0" pickOnBounds="true">
+         <image>
+            <Image url="@images/backgroundUno2.png" />
+         </image>
+      </ImageView>
+      <BorderPane layoutX="25.0" layoutY="25.0" prefHeight="450.0" prefWidth="650.0">
+         <top>
+            <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" spacing="10.0" BorderPane.alignment="CENTER">
+               <children>
+                  <Label styleClass="title-label" stylesheets="@css/style.css" text="EISC UNO" textFill="RED">
+                     <font>
+                        <Font name="Berlin Sans FB Bold" size="18.0" />
+                     </font>
+                  </Label>
+                  <GridPane fx:id="gridPaneCardsMachine">
+                     <columnConstraints>
+                        <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                        <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                        <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                        <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                     </columnConstraints>
+                     <rowConstraints>
+                        <RowConstraints />
+                     </rowConstraints>
+                     <padding>
+                        <Insets top="7.0" />
+                     </padding>
+                  </GridPane>
+                  <Button fx:id="buttonExit" mnemonicParsing="false" onAction="#handleExit" prefHeight="41.0" prefWidth="76.0" stylesheets="@css/style.css" text="Exit" />
+               </children>
+            </HBox>
+         </top>
+         <left>
+            <Pane prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+               <children>
+                  <Button fx:id="buttonTakeCard" layoutX="22.0" layoutY="18.0" mnemonicParsing="false" onAction="#onHandleTakeCard" prefHeight="215.0" prefWidth="156.0" style="-fx-background-color: transparent;">
+                     <graphic>
+                        <ImageView fitHeight="186.0" fitWidth="134.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@cards-uno/deck_of_cards.png" />
+                           </image>
+                        </ImageView>
+                     </graphic>
+                  </Button>
+               </children>
+            </Pane>
+         </left>
+         <center>
+            <Pane prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+               <children>
+                  <ImageView fx:id="tableImageView" fitHeight="170.0" fitWidth="120.0" layoutX="65.0" layoutY="40.0" pickOnBounds="true" preserveRatio="true" />
+
+                  <!-- Recuadro de color (figura 2D) -->
+                  <Pane fx:id="colorIndicatorBox" layoutX="190.0" layoutY="40.0" prefHeight="60.0" prefWidth="60.0" />
+               </children>
+            </Pane>
+         </center>
+         <right>
+            <Pane prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+               <children>
+                  <Button fx:id="buttonUno" layoutX="50.0" layoutY="100.0" mnemonicParsing="false" onAction="#onHandleUno" prefHeight="50.0" prefWidth="100.0" style="-fx-background-color: transparent;" text="UNO">
+                     <graphic>
+                        <ImageView fitHeight="150.0" fitWidth="120.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@images/button_uno.png" />
+                           </image>
+                        </ImageView>
+                     </graphic>
+                  </Button>
+               </children>
+            </Pane>
+         </right>
+         <bottom>
+            <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" spacing="10.0" stylesheets="@css/style.css" BorderPane.alignment="CENTER">
+               <children>
+                  <Button mnemonicParsing="false" onAction="#onHandleBack" prefHeight="41.0" prefWidth="101.0" text="Previous" textFill="WHITE">
+                     <font>
+                        <Font name="Berlin Sans FB" size="12.0" />
+                     </font>
+                  </Button>
+                  <GridPane fx:id="gridPaneCardsPlayer">
+                     <columnConstraints>
+                        <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                        <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                        <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                        <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                     </columnConstraints>
+                     <rowConstraints>
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                     </rowConstraints>
+                     <padding>
+                        <Insets bottom="7.0" />
+                     </padding>
+                  </GridPane>
+                  <Button mnemonicParsing="false" onAction="#onHandleNext" prefHeight="41.0" prefWidth="94.0" text="Next" textFill="WHITE" />
+               </children>
+            </HBox>
+         </bottom>
+      </BorderPane>
+   </children>
+</AnchorPane>

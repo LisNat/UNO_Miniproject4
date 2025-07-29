@@ -1,0 +1,50 @@
+/* Tittle */
+.title-label {
+    -fx-font-family: "Bernard MT Condensed";
+    -fx-font-size: 44px;
+    -fx-text-fill: #FFA500;
+    -fx-effect: dropshadow(gaussian, #000000, 6, 0.4, 2, 2);
+}
+
+.title-label-end {
+    -fx-font-family: "Impact";
+    -fx-font-size: 85px;
+    -fx-text-fill: #FFC300;
+    -fx-effect: dropshadow(gaussian, #000000, 8, 0.5, 3, 3);
+    -fx-font-weight: bold;
+}
+
+.title-label-end2 {
+    -fx-font-family: "Impact";
+    -fx-font-size: 76px;
+    -fx-text-fill: #FFC300;
+    -fx-effect: dropshadow(gaussian, #000000, 8, 0.5, 3, 3);
+    -fx-font-weight: bold;
+}
+
+/* Buttons */
+.button {
+    -fx-font-family: "Bernard MT Condensed";
+    -fx-font-size: 16px;
+    -fx-background-color: linear-gradient(#FFD700, #FFA500);
+    -fx-border-color: black;
+    -fx-border-width: 2px;
+    -fx-border-radius: 12px;
+    -fx-background-radius: 12px;
+    -fx-text-fill: black;
+    -fx-font-weight: bold;
+    -fx-padding: 8 20 8 20;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 6, 0.5, 2, 2);
+}
+
+.button:hover {
+    -fx-background-color: linear-gradient(#FFA500, #FF4500);
+    -fx-scale-x: 1.05;
+    -fx-scale-y: 1.05;
+}
+
+.button:pressed {
+    -fx-background-color: linear-gradient(#FF4500, #FF0000);
+    -fx-translate-y: 2;
+}
