@@ -299,6 +299,11 @@ public class GameUnoController implements IGameEventListener {
      */
     @FXML
     void onHandleTakeCard(ActionEvent event) {
+        if (gameUno.isSkipHumanTurn()) {
+            System.out.println("Pierdes el turno, no puedes robar.");
+            return;
+        }
+
         try {
             if (gameUno == null || humanPlayer == null) {
                 System.out.println("Juego no iniciado correctamente.");
