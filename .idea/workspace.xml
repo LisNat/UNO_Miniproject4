@@ -34,12 +34,12 @@
     &quot;assignee&quot;: &quot;fabiansvc&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/LisNat/UNO_Miniproject4.git",
-    "accountId": "6a1c3206-f83c-437e-bdd3-a3ea61340729"
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/LisNat/UNO_Miniproject4.git&quot;,
+    &quot;accountId&quot;: &quot;6a1c3206-f83c-437e-bdd3-a3ea61340729&quot;
   }
-}]]></component>
+}</component>
   <component name="KubernetesApiPersistence">{}</component>
   <component name="KubernetesApiProvider">{
   &quot;isMigrated&quot;: true
@@ -165,6 +165,7 @@
       <workItem from="1753492618867" duration="913000" />
       <workItem from="1753550357028" duration="31399000" />
       <workItem from="1753816756830" duration="15000" />
+      <workItem from="1753913065350" duration="367000" />
     </task>
     <servers />
   </component>
