@@ -15,6 +15,9 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Pane;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import org.example.eiscuno.model.card.Card;
@@ -78,6 +81,9 @@ public class GameUnoController implements IGameEventListener {
 
     private ThreadCheckGameOver threadCheckGameOver;
 
+    @FXML private Pane colorIndicatorBox;
+    private Rectangle colorIndicator;
+
     /**
      * Initializes the controller.
      */
@@ -105,7 +111,16 @@ public class GameUnoController implements IGameEventListener {
         // Mostramos la carta inicial en la mesa
         Card topCard = table.getCurrentCardOnTheTable();
         if(topCard != null) {
+            //se inicia el rectangulo indicador
             tableImageView.setImage(topCard.getImage());
+            colorIndicator = new Rectangle(50, 50);
+            colorIndicator.setArcWidth(10);
+            colorIndicator.setArcHeight(10);
+            colorIndicator.setFill(Color.GRAY);
+            colorIndicator.setStroke(Color.BLACK);
+            colorIndicator.setStrokeWidth(1.5);
+            colorIndicatorBox.getChildren().add(colorIndicator);
+            updateColorIndicator(topCard.getColor());
         }
 
         printCardsHumanPlayer();
@@ -173,6 +188,7 @@ public class GameUnoController implements IGameEventListener {
                     try {
                         gameUno.playCard(card);
                         tableImageView.setImage(card.getImage());
+                        updateColorIndicator(card.getColor());
                         humanPlayer.removeCard(findPosCardsHumanPlayer(card));
                         saveGameState();
 
@@ -299,14 +315,22 @@ public class GameUnoController implements IGameEventListener {
      */
     @FXML
     void onHandleTakeCard(ActionEvent event) {
-        if (gameUno.isSkipHumanTurn()) {
-            System.out.println("Pierdes el turno, no puedes robar.");
-            return;
-        }
-
         try {
             if (gameUno == null || humanPlayer == null) {
                 System.out.println("Juego no iniciado correctamente.");
+                return;
+            }
+
+            // Verificamos si el mazo está vacío antes de intentar robar
+            if (gameUno.isDeckEmpty()) {
+                buttonTakeCard.setDisable(true);
+                Platform.runLater(() -> {
+                    Alert alert = new Alert(Alert.AlertType.WARNING);
+                    alert.setTitle("Mazo Vacío");
+                    alert.setHeaderText(null);
+                    alert.setContentText("No hay más cartas disponibles en el mazo");
+                    alert.showAndWait();
+                });
                 return;
             }
 
@@ -330,14 +354,28 @@ public class GameUnoController implements IGameEventListener {
                 Alert alert = new Alert(Alert.AlertType.WARNING);
                 alert.setTitle("Mazo Vacío");
                 alert.setHeaderText(null);
-                alert.setContentText(e.getMessage());
+                alert.setContentText("No hay más cartas disponibles en el mazo");
                 alert.showAndWait();
             });
 
         } catch (IllegalGameStateException e) {
             System.out.println(e.getMessage());
+            Platform.runLater(() -> {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Estado inválido del juego");
+                alert.setHeaderText(null);
+                alert.setContentText(e.getMessage());
+                alert.showAndWait();
+            });
         } catch (Exception e) {
             System.err.println("Error inesperado al robar carta: " + e.getMessage());
+            Platform.runLater(() -> {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Error");
+                alert.setHeaderText(null);
+                alert.setContentText("Error inesperado: " + e.getMessage());
+                alert.showAndWait();
+            });
         }
     }
 
@@ -383,6 +421,7 @@ public class GameUnoController implements IGameEventListener {
                 currentCard.setColor(color);
                 // Actualizamos la imagen si es necesario
                 tableImageView.setImage(currentCard.getImage());
+                updateColorIndicator(color);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -426,6 +465,8 @@ public class GameUnoController implements IGameEventListener {
             System.out.println("¡No dijiste UNO a tiempo! Penalización aplicada.");
             gameUno.drawCard(humanPlayer); // Intenta robar carta
             printCardsHumanPlayer();
+            Card topCard = table.getCurrentCardOnTheTable();
+            updateColorIndicator(topCard.getColor());
             saveGameState();
 
         } catch (EmptyDeckException ex) {
@@ -606,6 +647,7 @@ public class GameUnoController implements IGameEventListener {
             Card currentCard = gameUno.getTable().getCurrentCardOnTheTable();
             if (currentCard != null) {
                 tableImageView.setImage(currentCard.getImage());
+
             }
 
             // Restaurar mano del jugador humano
@@ -623,6 +665,33 @@ public class GameUnoController implements IGameEventListener {
         } catch (Exception e) {
             System.err.println("Error al restaurar parte visual: " + e.getMessage());
         }
+    }
+
+    public void updateColorIndicator(String color) {
+        if (color == null) {
+            return; // No actualizamos si el color no está definido
+        }
+
+        Color fxColor;
+        switch (color.toLowerCase()) {
+            case "red":
+                fxColor = Color.RED;
+                break;
+            case "green":
+                fxColor = Color.LIMEGREEN;
+                break;
+            case "blue":
+                fxColor = Color.DODGERBLUE;
+                break;
+            case "yellow":
+                fxColor = Color.GOLD;
+                break;
+            default:
+                fxColor = Color.GRAY;
+                break;
+        }
+
+        colorIndicator.setFill(fxColor);
     }
 
 

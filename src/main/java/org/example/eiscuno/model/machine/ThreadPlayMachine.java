@@ -21,7 +21,8 @@ public class ThreadPlayMachine extends Thread {
     private volatile boolean hasPlayerPlayed;
     private GameUnoController gameUnocontroller;
 
-    public ThreadPlayMachine(Table table, Player machinePlayer, ImageView tableImageView, GameUno gameUno, Deck deck, GameUnoController gameUnocontroller) {
+    public ThreadPlayMachine(Table table, Player machinePlayer, ImageView tableImageView,
+                             GameUno gameUno, Deck deck, GameUnoController gameUnocontroller) {
         this.table = table;
         this.machinePlayer = machinePlayer;
         this.tableImageView = tableImageView;
@@ -31,44 +32,43 @@ public class ThreadPlayMachine extends Thread {
         this.gameUnocontroller = gameUnocontroller;
     }
 
+    @Override
     public void run() {
-        while (!gameUno.isGameOver()) {
+        while (!gameUno.isGameOver() && !Thread.currentThread().isInterrupted()) {
             if (hasPlayerPlayed) {
                 try {
                     Thread.sleep(2000);
 
-                    if (gameUno.isGameOver()) {
+                    if (gameUno.isGameOver() || Thread.currentThread().isInterrupted()) {
                         return;
                     }
 
-                    // Verificamos si la máquina debe perder turno
                     if (gameUno.isSkipMachineTurn()) {
                         gameUno.clearSkipMachineTurn();
                         hasPlayerPlayed = false;
-                        continue; // Vuelve al inicio del ciclo (turno humano)
+                        continue;
                     }
 
-                    // Máquina juega con normalidad
                     putCardOnTheTable();
 
-                    // Manejamos efectos especiales que hacen repetir turno
                     if (gameUno.isSkipHumanTurn()) {
                         gameUno.clearSkipHumanTurn();
-                        // No cambiamos hasPlayerPlayed para que repita turno
                     } else {
-                        hasPlayerPlayed = false; // Pasamos turno al humano normalmente
+                        hasPlayerPlayed = false;
                     }
 
                 } catch (InterruptedException e) {
+                    System.out.println("ThreadPlayMachine interrumpido");
                     Thread.currentThread().interrupt();
-                    System.out.println("Hilo interrumpido");
+                    break;
+                } catch (Exception e) {
+                    System.err.println("Error inesperado en ThreadPlayMachine: " + e.getMessage());
                 }
             }
         }
     }
 
     private void putCardOnTheTable() {
-        // Buscamos carta jugable
         for (int i = 0; i < machinePlayer.getCardsPlayer().size(); i++) {
             Card card = machinePlayer.getCard(i);
             if (gameUno.canPlay(card)) {
@@ -77,21 +77,26 @@ public class ThreadPlayMachine extends Thread {
                     tableImageView.setImage(card.getImage());
                     machinePlayer.removeCard(i);
 
-                    Platform.runLater(() -> gameUnocontroller.printCardsMachinePlayer());
+                    // Color actual (antes de cambio si es WILD)
+                    String colorToSet = card.getColor();
 
-                    // Manejamos los colores de las cartas especiales
+                    // Si es WILD o +4, cambiamos color aleatoriamente
                     if ("WILD".equals(card.getValue()) || "+4".equals(card.getValue())) {
                         String[] colors = {"RED", "GREEN", "BLUE", "YELLOW"};
                         String selectedColor = colors[(int)(Math.random() * colors.length)];
-                        try {
-                            table.getCurrentCardOnTheTable().setColor(selectedColor);
-                            System.out.println("Máquina eligió el color: " + selectedColor);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
+                        table.getCurrentCardOnTheTable().setColor(selectedColor);
+                        colorToSet = selectedColor;
+                        System.out.println("Máquina eligió el color: " + selectedColor);
                     }
+
+                    final String finalColor = colorToSet;
+                    Platform.runLater(() -> {
+                        gameUnocontroller.printCardsMachinePlayer();
+                        gameUnocontroller.updateColorIndicator(finalColor);
+                    });
+
                 } catch (InvalidCardPlayException e) {
-                    System.out.println("⚠️ La máquina intentó jugar una carta inválida: " + e.getMessage());
+                    System.out.println("⚠️ Carta inválida: " + e.getMessage());
                     Platform.runLater(() -> {
                         Alert alert = new Alert(Alert.AlertType.WARNING);
                         alert.setTitle("Error de juego");
@@ -104,16 +109,14 @@ public class ThreadPlayMachine extends Thread {
             }
         }
 
-        // Toma una carta si no puede jugar
+        // Máquina no pudo jugar, toma carta
         try {
             Card drawnCard = deck.takeCard();
             machinePlayer.addCard(drawnCard);
             Platform.runLater(() -> gameUnocontroller.printCardsMachinePlayer());
-            System.out.println("Máquina no puede jugar y roba: " + drawnCard.getValue() + " - " + drawnCard.getColor());
+            System.out.println("Máquina robó: " + drawnCard.getValue() + " - " + drawnCard.getColor());
         } catch (EmptyDeckException e) {
             System.out.println("Mazo vacío. No se puede robar más.");
-            // Por ahora mostraré una alerta (se puede cambiar)
-            // Deberia colocarse en los demás
             Platform.runLater(() -> {
                 Alert alert = new Alert(Alert.AlertType.WARNING);
                 alert.setTitle("Mazo vacío");
