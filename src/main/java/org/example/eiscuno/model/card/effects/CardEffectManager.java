@@ -42,7 +42,7 @@ public class CardEffectManager {
         for (CardEffect effect : effects) {
             if (effect.canApply(card)) {
                 effect.applyEffect(gameUno, card, currentPlayer, opponent);
-                break; // Solo aplicamos el primer efecto que coincida
+                break;
             }
         }
     }
