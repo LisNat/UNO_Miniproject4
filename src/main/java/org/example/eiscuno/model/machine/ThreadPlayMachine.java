@@ -34,12 +34,12 @@ public class ThreadPlayMachine extends Thread {
 
     @Override
     public void run() {
-        while (!gameUno.isGameOver()) {
+        while (!gameUno.isGameOver() && !Thread.currentThread().isInterrupted()) {
             if (hasPlayerPlayed) {
                 try {
                     Thread.sleep(2000);
 
-                    if (gameUno.isGameOver()) {
+                    if (gameUno.isGameOver() || Thread.currentThread().isInterrupted()) {
                         return;
                     }
 
@@ -58,8 +58,11 @@ public class ThreadPlayMachine extends Thread {
                     }
 
                 } catch (InterruptedException e) {
+                    System.out.println("ThreadPlayMachine interrumpido");
                     Thread.currentThread().interrupt();
-                    System.out.println("Hilo interrumpido");
+                    break;
+                } catch (Exception e) {
+                    System.err.println("Error inesperado en ThreadPlayMachine: " + e.getMessage());
                 }
             }
         }

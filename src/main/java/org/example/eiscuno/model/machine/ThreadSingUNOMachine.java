@@ -6,6 +6,7 @@ import java.util.ArrayList;
 
 public class ThreadSingUNOMachine implements Runnable{
     private ArrayList<Card> cardsPlayer;
+    private volatile boolean running = true;
 
     public ThreadSingUNOMachine(ArrayList<Card> cardsPlayer){
         this.cardsPlayer = cardsPlayer;
@@ -13,14 +14,22 @@ public class ThreadSingUNOMachine implements Runnable{
 
     @Override
     public void run(){
-        while (true){
+        while (running && !Thread.currentThread().isInterrupted()){
             try {
                 Thread.sleep((long) (Math.random() * 5000));
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                System.out.println("ThreadSingUNOMachine interrumpido");
+                Thread.currentThread().interrupt();
+                break;
             }
-            hasOneCardTheHumanPlayer();
+            if (running) {
+                hasOneCardTheHumanPlayer();
+            }
         }
+    }
+
+    public void interrupt() {
+        running = false;
     }
 
     private void hasOneCardTheHumanPlayer(){

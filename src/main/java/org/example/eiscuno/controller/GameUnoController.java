@@ -321,6 +321,19 @@ public class GameUnoController implements IGameEventListener {
                 return;
             }
 
+            // Verificamos si el mazo está vacío antes de intentar robar
+            if (gameUno.isDeckEmpty()) {
+                buttonTakeCard.setDisable(true);
+                Platform.runLater(() -> {
+                    Alert alert = new Alert(Alert.AlertType.WARNING);
+                    alert.setTitle("Mazo Vacío");
+                    alert.setHeaderText(null);
+                    alert.setContentText("No hay más cartas disponibles en el mazo");
+                    alert.showAndWait();
+                });
+                return;
+            }
+
             Card card = gameUno.drawCard(humanPlayer);
             saveGameState();
             System.out.println("Robaste: " + card.getValue() + " " + card.getColor());
@@ -341,14 +354,28 @@ public class GameUnoController implements IGameEventListener {
                 Alert alert = new Alert(Alert.AlertType.WARNING);
                 alert.setTitle("Mazo Vacío");
                 alert.setHeaderText(null);
-                alert.setContentText(e.getMessage());
+                alert.setContentText("No hay más cartas disponibles en el mazo");
                 alert.showAndWait();
             });
 
         } catch (IllegalGameStateException e) {
             System.out.println(e.getMessage());
+            Platform.runLater(() -> {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Estado inválido del juego");
+                alert.setHeaderText(null);
+                alert.setContentText(e.getMessage());
+                alert.showAndWait();
+            });
         } catch (Exception e) {
             System.err.println("Error inesperado al robar carta: " + e.getMessage());
+            Platform.runLater(() -> {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Error");
+                alert.setHeaderText(null);
+                alert.setContentText("Error inesperado: " + e.getMessage());
+                alert.showAndWait();
+            });
         }
     }
 
