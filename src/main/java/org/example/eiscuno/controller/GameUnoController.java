@@ -498,7 +498,7 @@ public class GameUnoController implements IGameEventListener {
         });
     }
 
-    private void checkUnoOpportunity() {
+    public void checkUnoOpportunity() {
         Platform.runLater(() -> {
             try {
                 // Verificación más robusta

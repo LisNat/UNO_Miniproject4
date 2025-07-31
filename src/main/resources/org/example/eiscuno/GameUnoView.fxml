@@ -91,7 +91,7 @@
          <bottom>
             <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" spacing="10.0" stylesheets="@css/style.css" BorderPane.alignment="CENTER">
                <children>
-                  <Button mnemonicParsing="false" onAction="#onHandleBack" prefHeight="41.0" prefWidth="101.0" text="Previous" textFill="WHITE">
+                  <Button mnemonicParsing="false" onAction="#onHandleBack" prefHeight="43.0" prefWidth="107.0" text="Previous" textFill="WHITE">
                      <font>
                         <Font name="Berlin Sans FB" size="12.0" />
                      </font>

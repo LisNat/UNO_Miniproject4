@@ -24,7 +24,7 @@
 
 /* Buttons */
 .button {
-    -fx-font-family: "Bernard MT Condensed";
+    -fx-font-family: "Comic Sans MS", "Segoe UI";
     -fx-font-size: 16px;
     -fx-background-color: linear-gradient(#FFD700, #FFA500);
     -fx-border-color: black;
@@ -36,6 +36,28 @@
     -fx-padding: 8 20 8 20;
     -fx-cursor: hand;
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 6, 0.5, 2, 2);
+}
+
+.nickname-label {
+    -fx-font-family: "Comic Sans MS", "Segoe UI", cursive;
+    -fx-font-size: 22px;
+    -fx-text-fill: #2E2E2E;
+    -fx-font-weight: bold;
+    -fx-effect: dropshadow(gaussian, #ffffff, 2, 0.2, 0, 1);
+}
+
+.nickname-textfield {
+    -fx-background-color: rgba(255, 255, 255, 0.95);
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-border-color: #FFD700;
+    -fx-border-width: 2;
+    -fx-font-size: 12px;
+    -fx-padding: 8 12;
+    -fx-prompt-text-fill: #a8a8a8;
+    -fx-effect: dropshadow(gaussian, #888888, 2, 0.2, 1, 1);
+    -fx-font-family: "Segoe UI", sans-serif;
+    -fx-text-fill: #333;
 }
 
 .button:hover {

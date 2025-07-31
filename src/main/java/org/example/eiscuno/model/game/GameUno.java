@@ -17,7 +17,7 @@ import java.sql.SQLOutput;
  * Represents a game of Uno.
  * This class manages the game logic and interactions between players, deck, and the table.
  */
-public class GameUno implements IGameUno  {
+public class GameUno implements IGameUno {
 
     private Player humanPlayer;
     private Player machinePlayer;
@@ -218,6 +218,7 @@ public class GameUno implements IGameUno  {
         Player currentPlayer = humanPlayer.getCardsPlayer().contains(card) ? humanPlayer : machinePlayer;
         Player opponent = currentPlayer == humanPlayer ? machinePlayer : humanPlayer;
 
+
         // Usar el CardEffectManager para aplicar efectos (principio Open/Closed)
         cardEffectManager.applyCardEffect(this, card, currentPlayer, opponent);
     }
@@ -324,5 +325,7 @@ public class GameUno implements IGameUno  {
         Card topCard = table.getCurrentCardOnTheTable();
         return humanPlayer.hasPlayableCard(topCard) || machinePlayer.hasPlayableCard(topCard);
     }
+
+
 
 }
