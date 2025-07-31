@@ -17,7 +17,6 @@ public class Deck implements Serializable {
     /**
      * Returns the stack of cards representing the current deck.
      *
-     * @return the stack of cards in the deck
      */
     public Deck() {
         deckOfCards = new Stack<>();
