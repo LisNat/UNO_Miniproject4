@@ -51,7 +51,7 @@
          <left>
             <Pane prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
                <children>
-                  <Button fx:id="buttonTakeCard" layoutX="22.0" layoutY="18.0" mnemonicParsing="false" onAction="#onHandleTakeCard" prefHeight="215.0" prefWidth="156.0" style="-fx-background-color: transparent;">
+                  <Button fx:id="buttonTakeCard" layoutX="22.0" layoutY="18.0" mnemonicParsing="false" onAction="#onHandleTakeCard" prefHeight="215.0" prefWidth="156.0" style="-fx-background-color: transparent;" styleClass="image-view" stylesheets="@css/style.css">
                      <graphic>
                         <ImageView fitHeight="186.0" fitWidth="134.0" pickOnBounds="true" preserveRatio="true">
                            <image>
@@ -79,7 +79,7 @@
          <right>
             <Pane prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
                <children>
-                  <Button fx:id="buttonUno" layoutX="50.0" layoutY="100.0" mnemonicParsing="false" onAction="#onHandleUno" prefHeight="50.0" prefWidth="100.0" style="-fx-background-color: transparent;" text="UNO">
+                  <Button fx:id="buttonUno" layoutX="50.0" layoutY="100.0" mnemonicParsing="false" onAction="#onHandleUno" prefHeight="50.0" prefWidth="100.0" style="-fx-background-color: transparent;" styleClass="image-view" stylesheets="@css/style.css" text="UNO">
                      <graphic>
                         <ImageView fitHeight="150.0" fitWidth="120.0" pickOnBounds="true" preserveRatio="true">
                            <image>
