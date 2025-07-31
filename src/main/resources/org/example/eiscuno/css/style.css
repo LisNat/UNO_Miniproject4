@@ -6,6 +6,21 @@
     -fx-effect: dropshadow(gaussian, #000000, 6, 0.4, 2, 2);
 }
 
+.title-label-end {
+    -fx-font-family: "Impact";
+    -fx-font-size: 85px;
+    -fx-text-fill: #FFC300;
+    -fx-effect: dropshadow(gaussian, #000000, 8, 0.5, 3, 3);
+    -fx-font-weight: bold;
+}
+
+.title-label-end2 {
+    -fx-font-family: "Impact";
+    -fx-font-size: 76px;
+    -fx-text-fill: #FFC300;
+    -fx-effect: dropshadow(gaussian, #000000, 8, 0.5, 3, 3);
+    -fx-font-weight: bold;
+}
 
 /* Buttons */
 .button {

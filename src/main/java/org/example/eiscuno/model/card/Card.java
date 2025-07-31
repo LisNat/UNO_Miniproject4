@@ -3,13 +3,14 @@ package org.example.eiscuno.model.card;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import org.example.eiscuno.model.unoenum.EISCUnoEnum;
+import org.example.eiscuno.model.prototype.Prototype;
 
 import java.io.Serializable;
 
 /**
  * Represents a card in the Uno game.
  */
-public class Card implements Serializable {
+public class Card implements Serializable, Prototype<Card> {
     private String url;
     private String value;
     private String color;
@@ -101,5 +102,11 @@ public class Card implements Serializable {
         // Regla normal: color o valor coincidente
         return this.color.equals(topCard.getColor()) ||
                 this.value.equals(topCard.getValue());
+    }
+
+    @Override
+    public Card clone() {
+        Card clonedCard = new Card(this.url, this.value, this.color);
+        return clonedCard;
     }
 }

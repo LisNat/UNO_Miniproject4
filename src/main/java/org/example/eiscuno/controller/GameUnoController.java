@@ -5,6 +5,9 @@ import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceDialog;
@@ -12,6 +15,9 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Pane;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import org.example.eiscuno.model.card.Card;
@@ -75,6 +81,9 @@ public class GameUnoController implements IGameEventListener {
 
     private ThreadCheckGameOver threadCheckGameOver;
 
+    @FXML private Pane colorIndicatorBox;
+    private Rectangle colorIndicator;
+
     /**
      * Initializes the controller.
      */
@@ -102,7 +111,16 @@ public class GameUnoController implements IGameEventListener {
         // Mostramos la carta inicial en la mesa
         Card topCard = table.getCurrentCardOnTheTable();
         if(topCard != null) {
+            //se inicia el rectangulo indicador
             tableImageView.setImage(topCard.getImage());
+            colorIndicator = new Rectangle(50, 50);
+            colorIndicator.setArcWidth(10);
+            colorIndicator.setArcHeight(10);
+            colorIndicator.setFill(Color.GRAY);
+            colorIndicator.setStroke(Color.BLACK);
+            colorIndicator.setStrokeWidth(1.5);
+            colorIndicatorBox.getChildren().add(colorIndicator);
+            updateColorIndicator(topCard.getColor());
         }
 
         printCardsHumanPlayer();
@@ -163,13 +181,14 @@ public class GameUnoController implements IGameEventListener {
             cardImageView.setOnMouseClicked((MouseEvent event) -> {
                 if (gameUno.isSkipHumanTurn()) {
                     System.out.println("Pierdes el turno, no puedes jugar.");
-                    return; // Evita cualquier acción si el humano debe saltar turno
+                    return;
                 }
 
                 if (gameUno.canPlay(card)) {
                     try {
                         gameUno.playCard(card);
                         tableImageView.setImage(card.getImage());
+                        updateColorIndicator(card.getColor());
                         humanPlayer.removeCard(findPosCardsHumanPlayer(card));
                         saveGameState();
 
@@ -302,6 +321,19 @@ public class GameUnoController implements IGameEventListener {
                 return;
             }
 
+            // Verificamos si el mazo está vacío antes de intentar robar
+            if (gameUno.isDeckEmpty()) {
+                buttonTakeCard.setDisable(true);
+                Platform.runLater(() -> {
+                    Alert alert = new Alert(Alert.AlertType.WARNING);
+                    alert.setTitle("Mazo Vacío");
+                    alert.setHeaderText(null);
+                    alert.setContentText("No hay más cartas disponibles en el mazo");
+                    alert.showAndWait();
+                });
+                return;
+            }
+
             Card card = gameUno.drawCard(humanPlayer);
             saveGameState();
             System.out.println("Robaste: " + card.getValue() + " " + card.getColor());
@@ -322,14 +354,28 @@ public class GameUnoController implements IGameEventListener {
                 Alert alert = new Alert(Alert.AlertType.WARNING);
                 alert.setTitle("Mazo Vacío");
                 alert.setHeaderText(null);
-                alert.setContentText(e.getMessage());
+                alert.setContentText("No hay más cartas disponibles en el mazo");
                 alert.showAndWait();
             });
 
         } catch (IllegalGameStateException e) {
             System.out.println(e.getMessage());
+            Platform.runLater(() -> {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Estado inválido del juego");
+                alert.setHeaderText(null);
+                alert.setContentText(e.getMessage());
+                alert.showAndWait();
+            });
         } catch (Exception e) {
             System.err.println("Error inesperado al robar carta: " + e.getMessage());
+            Platform.runLater(() -> {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Error");
+                alert.setHeaderText(null);
+                alert.setContentText("Error inesperado: " + e.getMessage());
+                alert.showAndWait();
+            });
         }
     }
 
@@ -375,6 +421,7 @@ public class GameUnoController implements IGameEventListener {
                 currentCard.setColor(color);
                 // Actualizamos la imagen si es necesario
                 tableImageView.setImage(currentCard.getImage());
+                updateColorIndicator(color);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -418,6 +465,8 @@ public class GameUnoController implements IGameEventListener {
             System.out.println("¡No dijiste UNO a tiempo! Penalización aplicada.");
             gameUno.drawCard(humanPlayer); // Intenta robar carta
             printCardsHumanPlayer();
+            Card topCard = table.getCurrentCardOnTheTable();
+            updateColorIndicator(topCard.getColor());
             saveGameState();
 
         } catch (EmptyDeckException ex) {
@@ -471,16 +520,26 @@ public class GameUnoController implements IGameEventListener {
         });
     }
 
-    public void showGameOver(String message) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Fin del Juego");
-        alert.setHeaderText(message);
-        alert.setContentText("Presiona aceptar.");
-        alert.showAndWait();
+    public void showGameOver(boolean playerWon) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/org/example/eiscuno/EndGameUnoView.fxml"));
+            Parent root = loader.load();
 
-        // Cierra la ventana del juego
-        Stage stage = (Stage) buttonExit.getScene().getWindow();
-        stage.close();
+            EndGameUnoController controller = loader.getController();
+            controller.setResult(playerWon);
+
+            Stage stage = new Stage();
+            stage.setScene(new Scene(root));
+            stage.setTitle("Game Over");
+            stage.show();
+
+            Stage currentStage = (Stage) tableImageView.getScene().getWindow();
+            currentStage.close();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.out.println("No se pudo cargar la pantalla de fin del juego.");
+        }
     }
 
     // Métodos para la serialización.
@@ -500,10 +559,10 @@ public class GameUnoController implements IGameEventListener {
 
             SerializableFileHandler handler = new SerializableFileHandler();
             handler.serialize("GameUnoState.ser", state);
-            System.out.println("✅ Estado del juego guardado exitosamente.");
+            System.out.println("Estado del juego guardado exitosamente.");
 
         } catch (Exception e) {
-            System.err.println("❌ Error al guardar el estado del juego: " + e.getMessage());
+            System.err.println("Error al guardar el estado del juego: " + e.getMessage());
         }
     }
 
@@ -513,7 +572,7 @@ public class GameUnoController implements IGameEventListener {
             GameUnoState state = (GameUnoState) handler.deserialize("GameUnoState.ser");
 
             if (state != null) {
-                System.out.println("✅ Estado del juego cargado exitosamente.");
+                System.out.println("Estado del juego cargado exitosamente.");
 
                 // Restaurar lógica
                 //gameUno.setDeck(state.getDeck());
@@ -555,11 +614,11 @@ public class GameUnoController implements IGameEventListener {
                 checkUnoOpportunity();
 
             } else {
-                System.out.println("⚠️ No se encontró estado válido para cargar.");
+                System.out.println("No se encontró estado válido para cargar.");
             }
 
         } catch (Exception e) {
-            System.err.println("❌ Error al cargar el estado del juego: " + e.getMessage());
+            System.err.println("Error al cargar el estado del juego: " + e.getMessage());
         }
     }
 
@@ -588,6 +647,7 @@ public class GameUnoController implements IGameEventListener {
             Card currentCard = gameUno.getTable().getCurrentCardOnTheTable();
             if (currentCard != null) {
                 tableImageView.setImage(currentCard.getImage());
+
             }
 
             // Restaurar mano del jugador humano
@@ -603,7 +663,36 @@ public class GameUnoController implements IGameEventListener {
             checkUnoOpportunity();
 
         } catch (Exception e) {
-            System.err.println("❌ Error al restaurar parte visual: " + e.getMessage());
+            System.err.println("Error al restaurar parte visual: " + e.getMessage());
         }
     }
+
+    public void updateColorIndicator(String color) {
+        if (color == null) {
+            return; // No actualizamos si el color no está definido
+        }
+
+        Color fxColor;
+        switch (color.toLowerCase()) {
+            case "red":
+                fxColor = Color.RED;
+                break;
+            case "green":
+                fxColor = Color.LIMEGREEN;
+                break;
+            case "blue":
+                fxColor = Color.DODGERBLUE;
+                break;
+            case "yellow":
+                fxColor = Color.GOLD;
+                break;
+            default:
+                fxColor = Color.GRAY;
+                break;
+        }
+
+        colorIndicator.setFill(fxColor);
+    }
+
+
 }

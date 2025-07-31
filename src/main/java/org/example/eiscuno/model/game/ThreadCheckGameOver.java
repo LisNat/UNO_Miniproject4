@@ -30,11 +30,11 @@ public class ThreadCheckGameOver extends Thread{
             if (humanPlayer.getCardsPlayer().isEmpty()) {
                 gameUno.setGameOver(true);
                 running = false;
-                Platform.runLater(() -> gameUnocontroller.showGameOver("¡Ganaste!"));
+                Platform.runLater(() -> gameUnocontroller.showGameOver(true));
             } else if (machinePlayer.getCardsPlayer().isEmpty()) {
                 gameUno.setGameOver(true);
                 running = false;
-                Platform.runLater(() -> gameUnocontroller.showGameOver("Perdiste"));
+                Platform.runLater(() -> gameUnocontroller.showGameOver(false));
             }
         }
     }

@@ -3,6 +3,7 @@ package org.example.eiscuno.model.game;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import org.example.eiscuno.model.card.Card;
+import org.example.eiscuno.model.card.effects.CardEffectManager;
 import org.example.eiscuno.model.deck.Deck;
 import org.example.eiscuno.model.exceptions.EmptyDeckException;
 import org.example.eiscuno.model.exceptions.IllegalGameStateException;
@@ -29,6 +30,9 @@ public class GameUno implements IGameUno  {
     private boolean gameOver = false;
     private boolean humanTurn = true;
 
+    // Gestor de efectos siguiendo el principio Open/Closed
+    private CardEffectManager cardEffectManager;
+
     /**
      * Constructs a new GameUno instance.
      *
@@ -42,6 +46,40 @@ public class GameUno implements IGameUno  {
         this.machinePlayer = machinePlayer;
         this.deck = deck;
         this.table = table;
+        this.cardEffectManager = new CardEffectManager();
+    }
+
+    // Métodos públicos para el CardEffectManager
+    public void skipHumanTurn() {
+        this.skipHumanTurn = true;
+    }
+
+    public void skipMachineTurn() {
+        this.skipMachineTurn = true;
+    }
+
+    public Player getHumanPlayer() {
+        return humanPlayer;
+    }
+
+    public Player getMachinePlayer() {
+        return machinePlayer;
+    }
+
+    public Deck getDeck() {
+        return deck;
+    }
+
+    public Table getTable() {
+        return table;
+    }
+
+    public boolean isHumanTurn() {
+        return humanTurn;
+    }
+
+    public void setHumanTurn(boolean humanTurn) {
+        this.humanTurn = humanTurn;
     }
 
     /**
@@ -176,54 +214,12 @@ public class GameUno implements IGameUno  {
 
         this.table.addCardOnTheTable(card);
 
-        Player opponent = humanPlayer.getCardsPlayer().contains(card) ?
-                machinePlayer : humanPlayer;
+        // Determinar quién jugó la carta y quién es el oponente
+        Player currentPlayer = humanPlayer.getCardsPlayer().contains(card) ? humanPlayer : machinePlayer;
+        Player opponent = currentPlayer == humanPlayer ? machinePlayer : humanPlayer;
 
-        // Manejamos los efectos especiales
-        switch(card.getValue()) {
-            case "+2":
-                eatCard(opponent, 2);
-                if (opponent == humanPlayer) {
-                    skipHumanTurn = true;
-                    System.out.println("Máquina jugó +2. Humano roba 2 cartas y pierde turno.");
-                } else {
-                    skipMachineTurn = true;
-                    System.out.println("Humano jugó +2. Máquina roba 2 cartas y pierde turno.");
-                }
-                break;
-
-            case "+4":
-                eatCard(opponent, 4);
-                if (opponent == humanPlayer) {
-                    skipHumanTurn = true;
-                    System.out.println("Máquina jugó +4. Humano roba 4 cartas y pierde turno.");
-                } else {
-                    skipMachineTurn = true;
-                    System.out.println("Humano jugó +4. Máquina roba 4 cartas y pierde turno.");
-                }
-                break;
-
-            case "SKIP":
-                if (opponent == humanPlayer) {
-                    System.out.println("Máquina usó SKIP: humano pierde turno");
-                    skipHumanTurn = true;
-                } else {
-                    System.out.println("Humano usó SKIP: máquina pierde turno");
-                    skipMachineTurn = true;
-                }
-                break;
-
-            case "REVERSE":
-                // En un juego de 2 jugadores, REVERSE funciona como SKIP
-                if (opponent == humanPlayer) {
-                    System.out.println("Máquina usó REVERSE: humano pierde turno");
-                    skipHumanTurn = true;
-                } else {
-                    System.out.println("Humano usó REVERSE: máquina pierde turno");
-                    skipMachineTurn = true;
-                }
-                break;
-        }
+        // Usar el CardEffectManager para aplicar efectos (principio Open/Closed)
+        cardEffectManager.applyCardEffect(this, card, currentPlayer, opponent);
     }
 
     private void endGameByEmptyDeck() {
@@ -310,27 +306,13 @@ public class GameUno implements IGameUno  {
         }
     }
 
-    public Player getHumanPlayer() {return this.humanPlayer;}
-
-    public void setHumanPlayer(Player humanPlayer) {this.humanPlayer = humanPlayer;}
-
-    public boolean isHumanTurn() {return this.humanTurn;}
-
-    public void setHumanTurn(boolean humanTurn) {this.humanTurn = humanTurn;}
-
-    public Player getMachinePlayer() {
-        return this.machinePlayer;
+    public void setCardEffectManager(CardEffectManager cardEffectManager) {
+        this.cardEffectManager = cardEffectManager;
     }
 
-    public void setMachinePlayer(Player machinePlayer) {this.machinePlayer = machinePlayer;}
-
-    public Deck getDeck() {return this.deck;}
-
-    public void setDeck(Deck deck) {this.deck = deck;}
-
-    public Table getTable() {return this.table;}
-
-    public void setTable(Table table) {this.table = table;}
+    public CardEffectManager getCardEffectManager() {
+        return cardEffectManager;
+    }
 
     private IGameEventListener listener;
 
@@ -342,9 +324,5 @@ public class GameUno implements IGameUno  {
         Card topCard = table.getCurrentCardOnTheTable();
         return humanPlayer.hasPlayableCard(topCard) || machinePlayer.hasPlayableCard(topCard);
     }
-
-    public void skipHumanTurn() {this.skipHumanTurn = true;}
-
-    public void skipMachineTurn() {this.skipMachineTurn = true;}
 
 }

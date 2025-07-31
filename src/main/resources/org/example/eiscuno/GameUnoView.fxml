@@ -67,6 +67,9 @@
             <Pane prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
                <children>
                   <ImageView fx:id="tableImageView" fitHeight="170.0" fitWidth="120.0" layoutX="65.0" layoutY="40.0" pickOnBounds="true" preserveRatio="true" />
+
+                  <!-- Recuadro de color (figura 2D) -->
+                  <Pane fx:id="colorIndicatorBox" layoutX="190.0" layoutY="40.0" prefHeight="60.0" prefWidth="60.0" />
                </children>
             </Pane>
          </center>
@@ -80,7 +83,8 @@
                               <Image url="@images/button_uno.png" />
                            </image>
                         </ImageView>
-                     </graphic></Button>
+                     </graphic>
+                  </Button>
                </children>
             </Pane>
          </right>
