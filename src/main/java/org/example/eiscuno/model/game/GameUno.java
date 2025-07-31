@@ -83,8 +83,10 @@ public class GameUno implements IGameUno {
     }
 
     /**
-     * Starts the Uno game by distributing cards to players.
-     * The human player and the machine player each receive 10 cards from the deck.
+     * Starts a new UNO game by distributing 5 cards to each player and placing an initial card on the table.
+     * Ensures that the initial card is not a special card (e.g., WILD, SKIP, +2).
+     * <p>
+     * If the deck is empty during setup, the game will not start and an error message will be printed.
      */
     @Override
     public void startGame() {
@@ -113,26 +115,56 @@ public class GameUno implements IGameUno {
         }
 
     }
-
+    /**
+     * Determines whether the given card is a special card in the UNO game.
+     * Special cards include +2, +4, SKIP, WILD, and REVERSE.
+     *
+     * @param card the {@code Card} to check
+     * @return true if the card is special, false otherwise
+     */
     private boolean isSpecialCard(Card card) {
         String value = card.getValue();
         return value == null || value.equals("+2") || value.equals("+4") || value.equals("SKIP") || value.equals("WILD") || value.equals("REVERSE");
     }
-
+    /**
+     * Checks whether the human player's next turn should be skipped.
+     *
+     * @return true if the human player's turn is to be skipped, false otherwise
+     */
     public boolean isSkipHumanTurn() {
         return skipHumanTurn;
     }
+    /**
+     * Clears the skip flag for the human player, allowing them to take their next turn.
+     */
     public void clearSkipHumanTurn() {
         this.skipHumanTurn = false;
     }
-
+    /**
+     * Checks whether the machine player's next turn should be skipped.
+     *
+     * @return true if the machine player's turn is to be skipped, false otherwise
+     */
     public boolean isSkipMachineTurn() {
         return skipMachineTurn;
     }
+    /**
+     * Clears the skip flag for the machine player, allowing it to take its next turn.
+     */
     public void clearSkipMachineTurn() {
         this.skipMachineTurn = false;
     }
-
+    /**
+     * Draws a card from the deck and adds it to the specified player's hand.
+     * If the deck is empty and no players can make a move, the game ends.
+     * <p>
+     * Notifies any registered listener about changes in the player's hand.
+     *
+     * @param player the player drawing the card
+     * @return the drawn {@code Card}
+     * @throws EmptyDeckException if the deck is empty and a card cannot be drawn
+     * @throws IllegalGameStateException if the game has already ended
+     */
     public Card drawCard(Player player) throws EmptyDeckException{
         if (isGameOver()) {
             throw new IllegalGameStateException("No se pueden robar cartas: el juego ha terminado");
@@ -222,7 +254,10 @@ public class GameUno implements IGameUno {
         // Usar el CardEffectManager para aplicar efectos (principio Open/Closed)
         cardEffectManager.applyCardEffect(this, card, currentPlayer, opponent);
     }
-
+    /**
+     * Ends the game due to an empty deck when no player can make a valid move.
+     * Displays an informational alert to notify the user and sets the game state to over.
+     */
     private void endGameByEmptyDeck() {
         Platform.runLater(() -> {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -306,21 +341,41 @@ public class GameUno implements IGameUno {
             return !isSpecialCard(card); // si no hay carta en mesa, solo normales
         }
     }
-
+    /**
+     * Assigns the specified {@code CardEffectManager} to manage special card effects in the game.
+     *
+     * @param cardEffectManager the {@code CardEffectManager} to set
+     */
     public void setCardEffectManager(CardEffectManager cardEffectManager) {
         this.cardEffectManager = cardEffectManager;
     }
-
+    /**
+     * Returns the {@code CardEffectManager} currently used to handle special card effects.
+     *
+     * @return the current {@code CardEffectManager} instance
+     */
     public CardEffectManager getCardEffectManager() {
         return cardEffectManager;
     }
-
+    /**
+     * Listener for game events, used to notify changes such as card updates in players' hands.
+     */
     private IGameEventListener listener;
-
+    /**
+     * Sets the game event listener to receive notifications about game state changes,
+     * such as updates to players' hands or turns.
+     *
+     * @param listener the {@code IGameEventListener} to register
+     */
     public void setGameEventListener(IGameEventListener listener) {
         this.listener = listener;
     }
-
+    /**
+     * Checks whether any player (human or machine) has at least one card
+     * that can be legally played on the current top card of the table.
+     *
+     * @return true if at least one player can make a valid move, false otherwise
+     */
     public boolean canAnyPlayerPlay() {
         Card topCard = table.getCurrentCardOnTheTable();
         return humanPlayer.hasPlayableCard(topCard) || machinePlayer.hasPlayableCard(topCard);

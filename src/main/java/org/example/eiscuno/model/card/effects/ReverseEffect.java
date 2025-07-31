@@ -5,9 +5,10 @@ import org.example.eiscuno.model.game.GameUno;
 import org.example.eiscuno.model.player.Player;
 
 /**
- * Efecto para cartas REVERSE
+ * Represents the effect of a "REVERSE" card in the UNO game.
+ * In a two-player game, it behaves like a "SKIP" card, causing the opponent to lose their turn.
  */
-public class ReverseEffect implements CardEffect {
+public class ReverseEffect implements ICardEffect {
 
     @Override
     public void applyEffect(GameUno gameUno, Card card, Player currentPlayer, Player opponent) {

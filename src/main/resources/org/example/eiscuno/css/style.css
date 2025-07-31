@@ -70,3 +70,10 @@
     -fx-background-color: linear-gradient(#FF4500, #FF0000);
     -fx-translate-y: 2;
 }
+
+.card-counter-label {
+    -fx-text-fill: black;
+    -fx-font-family: "Bernard MT Condensed";
+    -fx-font-size: 18px;
+    -fx-effect: dropshadow( gaussian , white , 2, 0.0 , 0 , 0 );
+}

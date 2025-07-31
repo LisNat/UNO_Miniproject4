@@ -11,6 +11,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceDialog;
+import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
@@ -66,6 +67,13 @@ public class GameUnoController implements IGameEventListener {
     @FXML
     private Button buttonUno;
 
+    @FXML
+    private Label cardCountLabel;
+
+    @FXML
+    private Label turnLabel;
+
+
     private Player humanPlayer;
     private Player machinePlayer;
     private Deck deck;
@@ -90,7 +98,12 @@ public class GameUnoController implements IGameEventListener {
     private PlaneTextFileHandler planeTextFileHandler;
 
     /**
-     * Initializes the controller.
+     * Initializes the game scene and its components. It checks whether a game is being continued,
+     * sets up visual elements like the table card image and color indicator, and starts necessary
+     * background threads for gameplay logic such as checking for "UNO", machine plays, and game over conditions.
+     *
+     * This method also loads and displays the cards of both players, sets up the game state,
+     * and starts a new game if not continuing a previous one.
      */
     @FXML
     public void initialize() {
@@ -108,9 +121,7 @@ public class GameUnoController implements IGameEventListener {
 
         initVariables(isContinuingGame);
 
-        this.gameUno.setGameEventListener(this);
-
-        if(!isContinuingGame) {
+        this.gameUno.setGameEventListener(this);if(!isContinuingGame) {
             this.gameUno.startGame();
         }
 
@@ -127,6 +138,9 @@ public class GameUnoController implements IGameEventListener {
             colorIndicator.setStrokeWidth(1.5);
             colorIndicatorBox.getChildren().add(colorIndicator);
             updateColorIndicator(topCard.getColor());
+            updateCardCounter();
+            turnLabel.setVisible(false);
+
         }
 
         printCardsHumanPlayer();
@@ -146,7 +160,13 @@ public class GameUnoController implements IGameEventListener {
     }
 
     /**
-     * Initializes the variables for the game.
+     * Initializes the core game variables depending on whether the user is continuing a previous game
+     * or starting a new one. If continuing, it loads the saved game state using serialization.
+     * Otherwise, it creates new instances of players, deck, table, and game logic.
+     *
+     * It also resets the initial positions for displaying player and machine cards.
+     *
+     * @param continueGame true if the game should resume from a saved state; false to start a new game.
      */
     private void initVariables(boolean continueGame) {
         // Para aplicar serialización:
@@ -166,12 +186,21 @@ public class GameUnoController implements IGameEventListener {
     }
 
     /**
-     * Prints the human player's cards on the grid pane.
+     * Displays the current visible cards of the human player in the grid pane. Clears any existing cards,
+     * updates the card counter, and sets mouse click events for playing a card.
+     *
+     * If the human player is skipped due to a SKIP or REVERSE card, their turn is skipped,
+     * the skip flag is cleared, and the machine's turn is triggered.
+     *
+     * When a card is clicked, the method checks if the play is valid. If so, it updates the game state,
+     * shows the played card on the table, handles special cards (like WILD), and saves the game.
+     *
+     * If the game is not over, it continues checking for a possible UNO declaration.
      */
     private void printCardsHumanPlayer() {
         this.gridPaneCardsPlayer.getChildren().clear();
         Card[] currentVisibleCardsHumanPlayer = this.gameUno.getCurrentVisibleCardsHumanPlayer(this.posInitCardToShow);
-
+        updateCardCounter();
         // Verificamos si se pierde turno antes de mostrar las cartas
         if (gameUno.isSkipHumanTurn()) {
             System.out.println("Pierdes el turno por SKIP o REVERSE");
@@ -195,6 +224,7 @@ public class GameUnoController implements IGameEventListener {
                         gameUno.playCard(card);
                         tableImageView.setImage(card.getImage());
                         updateColorIndicator(card.getColor());
+                        updateCardCounter();
                         humanPlayer.removeCard(findPosCardsHumanPlayer(card));
                         saveGameState();
 
@@ -242,9 +272,17 @@ public class GameUnoController implements IGameEventListener {
         }
     }
 
+    /**
+     * Displays a limited number of the machine player's cards in the grid pane.
+     * Clears the previous cards, updates the card counter, and shows up to 4 card backs
+     * starting from the current position.
+     *
+     * This method does not reveal the actual cards of the machine player to simulate
+     * the hidden nature of opponent hands in a typical UNO game.
+     */
     public void printCardsMachinePlayer() {
         gridPaneCardsMachine.getChildren().clear();
-
+        updateCardCounter();
         List<Card> machineCards = gameUno.getMachinePlayer().getCardsPlayer();
         int totalCards = machineCards.size();
 
@@ -274,10 +312,10 @@ public class GameUnoController implements IGameEventListener {
 
 
     /**
-     * Finds the position of a specific card in the human player's hand.
+     * Finds the position (index) of a given card in the human player's hand.
      *
-     * @param card the card to find
-     * @return the position of the card, or -1 if not found
+     * @param card The card to search for.
+     * @return The index of the card if found, or -1 if the card is not in the hand.
      */
     private Integer findPosCardsHumanPlayer(Card card) {
         for (int i = 0; i < this.humanPlayer.getCardsPlayer().size(); i++) {
@@ -298,6 +336,8 @@ public class GameUnoController implements IGameEventListener {
         if (this.posInitCardToShow > 0) {
             this.posInitCardToShow--;
             printCardsHumanPlayer();
+            updateCardCounter();
+
         }
     }
 
@@ -315,9 +355,13 @@ public class GameUnoController implements IGameEventListener {
     }
 
     /**
-     * Handles the action of taking a card.
+     * Handles the action of drawing a card from the deck when the player clicks the "Take Card" button.
      *
-     * @param event the action event
+     * Validates that the game and player are properly initialized. Checks if the deck is empty and shows
+     * a warning if no cards are available. Otherwise, draws a card, saves the game state, and updates the UI.
+     * If the drawn card is playable, informs the player.
+     *
+     * @param event The ActionEvent triggered by clicking the take card button.
      */
     @FXML
     void onHandleTakeCard(ActionEvent event) {
@@ -387,9 +431,12 @@ public class GameUnoController implements IGameEventListener {
 
 
     /**
-     * Handles the action of saying "Uno".
+     * Handles the action when the human player clicks the "UNO" button to declare UNO.
      *
-     * @param event the action event
+     * Sets the UNO declaration flag to true, stops any active UNO timer, hides the UNO button,
+     * logs the declaration, notifies the game logic, and saves the game state.
+     *
+     * @param event The ActionEvent triggered by clicking the UNO button.
      */
     @FXML
     void onHandleUno(ActionEvent event) {
@@ -404,14 +451,36 @@ public class GameUnoController implements IGameEventListener {
         gameUno.haveSungOne("HUMAN_PLAYER");
         saveGameState();
     }
-
+    /**
+     * Handles the exit operation of the game.
+     *
+     * Saves the current game state, closes the main application window,
+     * and safely stops or interrupts any active background threads related
+     * to checking game over conditions, machine player actions, and UNO declarations.
+     */
     @FXML
     private void handleExit() {
         saveGameState();
         Stage stage = (Stage) buttonExit.getScene().getWindow();
         stage.close();
-    }
+        if (threadCheckGameOver != null) {
+            threadCheckGameOver.stopRunning();
+        }
+        if (threadPlayMachine != null) {
+            threadPlayMachine.interrupt();
+        }
+        if(threadSingUNOMachine != null) {
+            threadSingUNOMachine.interrupt();
+        }
 
+    }
+    /**
+     * Handles the logic for playing a Wild card.
+     *
+     * Displays a dialog allowing the human player to choose a new color.
+     * Once a color is selected, it updates the current card on the table with the chosen color,
+     * refreshes the card image, and updates the color indicator in the UI.
+     */
     private void handleWildCard() {
         // Mostrar diálogo para seleccionar color
         ChoiceDialog<String> dialog = new ChoiceDialog<>("RED",
@@ -433,7 +502,14 @@ public class GameUnoController implements IGameEventListener {
             }
         });
     }
-
+    /**
+     * Starts the UNO timer for the human player.
+     *
+     * Initiates a countdown (randomized between 2-4 seconds) during which the player must press the "UNO" button.
+     * If the player fails to press it in time and the game is not over, a penalty is applied.
+     * The button is hidden after the timer ends, and the deck status is checked.
+     * The current game state is saved after starting the timer.
+     */
     private void startUnoTimer() {
         try {
             unoPressed = false;
@@ -465,7 +541,16 @@ public class GameUnoController implements IGameEventListener {
         }
     }
 
-    // Metodo para manejar la penalización
+    /**
+     * Applies the penalty to the human player for not declaring "UNO" in time.
+     *
+     * If the human player fails to press the "UNO" button within the allowed time frame,
+     * this method draws a card from the deck for the player and updates the user interface,
+     * including the player's hand and the color indicator on the table.
+     *
+     * If the deck is empty, the penalty cannot be applied, and a warning alert is displayed instead.
+     * Finally, the current game state is saved.
+     */
     private void handleUnoPenalty() {
         try {
             System.out.println("¡No dijiste UNO a tiempo! Penalización aplicada.");
@@ -487,7 +572,13 @@ public class GameUnoController implements IGameEventListener {
         }
     }
 
-    // Metodo para verificar estado del mazo
+    /**
+     * Checks whether the deck is empty and updates the "Take Card" button accordingly.
+     *
+     * This method runs on the JavaFX application thread and disables the "Take Card" button
+     * if there are no more cards in the deck. If an error occurs while checking the deck state,
+     * the error message is logged to the console.
+     */
     private void checkDeckEmptyStatus() {
         Platform.runLater(() -> {
             try {
@@ -497,7 +588,15 @@ public class GameUnoController implements IGameEventListener {
             }
         });
     }
-
+    /**
+     * Checks if the human player is eligible to declare "UNO" and updates the visibility of the UNO button.
+     *
+     * This method runs on the JavaFX application thread and displays the UNO button if the human player
+     * has exactly one card left, the game is not over, and the player's turn is not skipped.
+     * If the conditions are not met and the button is currently visible, it hides the button and stops
+     * the UNO timer if it was running.
+     * Any exceptions are caught and logged to the console.
+     */
     public void checkUnoOpportunity() {
         Platform.runLater(() -> {
             try {
@@ -525,7 +624,15 @@ public class GameUnoController implements IGameEventListener {
             }
         });
     }
-
+    /**
+     * Displays the end game screen and stops all relevant threads.
+     *
+     * This method loads the EndGameUnoView FXML file and displays the result of the game based on
+     * whether the human player won or lost. It also stops the background threads responsible for checking
+     * game state and machine actions, and closes the current game window.
+     *
+     * @param playerWon true if the human player won the game; false otherwise.
+     */
     public void showGameOver(boolean playerWon) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/org/example/eiscuno/EndGameUnoView.fxml"));
@@ -539,6 +646,16 @@ public class GameUnoController implements IGameEventListener {
             stage.setTitle("Game Over");
             stage.show();
 
+            if (threadCheckGameOver != null) {
+                threadCheckGameOver.stopRunning();
+            }
+            if (threadPlayMachine != null) {
+                threadPlayMachine.interrupt();
+            }
+            if(threadSingUNOMachine != null) {
+                threadSingUNOMachine.interrupt();
+            }
+
             Stage currentStage = (Stage) tableImageView.getScene().getWindow();
             currentStage.close();
 
@@ -548,8 +665,15 @@ public class GameUnoController implements IGameEventListener {
         }
     }
 
-    // Métodos para la serialización.
-
+    /**
+     * Saves the current state of the UNO game to a file.
+     *
+     * This method creates a {@link GameUnoState} object representing the current state of the game,
+     * including the deck, table, human and machine players, and game flags. The state is then serialized
+     * and saved to a file named "GameUnoState.ser" using {@link SerializableFileHandler}.
+     *
+     * If an error occurs during the saving process, it is caught and logged.
+     */
     public void saveGameState() {
         try {
             GameUnoState state = new GameUnoState(
@@ -571,7 +695,17 @@ public class GameUnoController implements IGameEventListener {
             System.err.println("Error al guardar el estado del juego: " + e.getMessage());
         }
     }
-
+    /**
+     * Loads the previously saved state of the UNO game from a file.
+     *
+     * This method deserializes a {@link GameUnoState} object from "GameUnoState.ser" using
+     * {@link SerializableFileHandler}. If a valid state is found, it restores all relevant game
+     * components including the deck, table, human and machine players, game flags, and visual state.
+     *
+     * It also reinitializes the {@link GameUno} object and restores UI components like card images.
+     * If the file does not contain a valid state, a message is logged. Any exceptions during
+     * deserialization or restoration are caught and logged.
+     */
     public void loadGameState() {
         try {
             SerializableFileHandler handler = new SerializableFileHandler();
@@ -646,7 +780,15 @@ public class GameUnoController implements IGameEventListener {
             card.loadTransientFields();
         }
     }
-
+    /**
+     * Restores the transient fields (such as images) for all cards in the game.
+     *
+     * This method ensures that image-related data for the human player's hand, the machine player's hand,
+     * the top card on the table, and the remaining cards in the deck are properly reloaded by calling
+     * {@code loadTransientFields()} on each {@link Card} object.
+     *
+     * This is necessary after deserialization, as transient fields are not saved and must be restored manually.
+     */
     private void restoreVisualState() {
         try {
             // Restaurar carta en la mesa
@@ -672,7 +814,15 @@ public class GameUnoController implements IGameEventListener {
             System.err.println("Error al restaurar parte visual: " + e.getMessage());
         }
     }
-
+    /**
+     * Updates the visual color indicator based on the current color of the top card.
+     *
+     * This method changes the fill color of the {@code colorIndicator} (usually a Circle or similar UI element)
+     * to visually represent the current active color in the game. It maps string color names to JavaFX colors.
+     *
+     * @param color the current color of the top card (e.g., "red", "green", "blue", "yellow").
+     *              If null or unrecognized, the indicator defaults to gray.
+     */
     public void updateColorIndicator(String color) {
         if (color == null) {
             return; // No actualizamos si el color no está definido
@@ -698,6 +848,37 @@ public class GameUnoController implements IGameEventListener {
         }
 
         colorIndicator.setFill(fxColor);
+    }
+    /**
+     * Updates the label that displays the number of cards held by each player.
+     *
+     * This method retrieves the current number of cards for both the human player and the machine,
+     * and updates the {@code cardCountLabel} to reflect the current game state.
+     * Useful for providing the player with real-time visual feedback.
+     */
+    public void updateCardCounter() {
+        int humanCardCount = humanPlayer.getCardCount();
+        int machineCardCount = machinePlayer.getCardCount();
+        cardCountLabel.setText("Máquina: " + machineCardCount + "\nJugador: " + humanCardCount);
+    }
+    /**
+     * Displays the machine's turn label for a short duration (1 second)
+     * and then hides it automatically.
+     * Useful for visually indicating when it is the machine's turn.
+     */
+    public void showMachineTurnTemporarily() {
+        if (turnLabel != null) {
+            turnLabel.setVisible(true); // Show the label
+
+            // Create a timeline to hide it after 1 second
+            Timeline timeline = new Timeline(new KeyFrame(
+                    Duration.seconds(1),
+                    event -> turnLabel.setVisible(false)
+            ));
+
+            timeline.setCycleCount(1); // Run only once
+            timeline.play();
+        }
     }
 
 

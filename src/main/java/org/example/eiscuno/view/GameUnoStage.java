@@ -35,6 +35,8 @@ public class GameUnoStage extends Stage {
         setResizable(false); // Disallows resizing of the stage
 
         this.getIcons().add(new Image(getClass().getResource("/org/example/eiscuno/favicon.png").toExternalForm()));
+        scene.getStylesheets().add(getClass().getResource("/org/example/eiscuno/css/style.css").toExternalForm());
+
 
         show(); // Displays the stage
     }

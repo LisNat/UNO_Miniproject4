@@ -74,5 +74,14 @@ public class Player implements IPlayer, Serializable {
         return false;
     }
 
+    /**
+     * Returns the number of cards currently in the player's hand.
+     *
+     * @return The size of the player's card deck.
+     */
+    public int getCardCount() {
+        return cardsPlayer.size();
+    }
+
 
 }

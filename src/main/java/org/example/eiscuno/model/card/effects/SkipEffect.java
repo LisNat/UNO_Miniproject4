@@ -5,9 +5,10 @@ import org.example.eiscuno.model.game.GameUno;
 import org.example.eiscuno.model.player.Player;
 
 /**
- * Efecto para cartas SKIP
+ * Represents the effect of a "SKIP" card in the UNO game.
+ * When applied, the opponent loses their turn.
  */
-public class SkipEffect implements CardEffect {
+public class SkipEffect implements ICardEffect {
 
     @Override
     public void applyEffect(GameUno gameUno, Card card, Player currentPlayer, Player opponent) {
