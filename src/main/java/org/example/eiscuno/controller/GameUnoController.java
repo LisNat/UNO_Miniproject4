@@ -35,6 +35,8 @@ import org.example.eiscuno.model.serializable.GameUnoState;
 import org.example.eiscuno.model.serializable.SerializableFileHandler;
 import org.example.eiscuno.model.table.Table;
 import org.example.eiscuno.view.WelcomeStage;
+import org.example.eiscuno.model.planeTextFiles.PlaneTextFileHandler;
+import java.io.File;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -84,6 +86,8 @@ public class GameUnoController implements IGameEventListener {
     @FXML private Pane colorIndicatorBox;
     private Rectangle colorIndicator;
 
+    private PlaneTextFileHandler planeTextFileHandler;
+
     /**
      * Initializes the controller.
      */
@@ -93,6 +97,7 @@ public class GameUnoController implements IGameEventListener {
 
         try {
             isContinuingGame = WelcomeStage.getInstance().getWelcomeController().isOnContinue();
+            planeTextFileHandler = new PlaneTextFileHandler();
         } catch (IOException e) {
             System.out.println("Error con apartado visual." + e.getMessage());
             isContinuingGame = false;
