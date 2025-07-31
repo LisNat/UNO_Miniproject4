@@ -70,6 +70,9 @@ public class GameUnoController implements IGameEventListener {
     @FXML
     private Label cardCountLabel;
 
+    @FXML
+    private Label turnLabel;
+
 
     private Player humanPlayer;
     private Player machinePlayer;
@@ -131,6 +134,7 @@ public class GameUnoController implements IGameEventListener {
             colorIndicatorBox.getChildren().add(colorIndicator);
             updateColorIndicator(topCard.getColor());
             updateCardCounter();
+            turnLabel.setVisible(false);
 
         }
 
@@ -732,6 +736,21 @@ public class GameUnoController implements IGameEventListener {
         int humanCardCount = humanPlayer.getCardCount();
         int machineCardCount = machinePlayer.getCardCount();
         cardCountLabel.setText("Máquina: " + machineCardCount + "\nJugador: " + humanCardCount);
+    }
+
+    public void showMachineTurnTemporarily() {
+        if (turnLabel != null) {
+            turnLabel.setVisible(true); // Show the label
+
+            // Create a timeline to hide it after 1 second
+            Timeline timeline = new Timeline(new KeyFrame(
+                    Duration.seconds(1),
+                    event -> turnLabel.setVisible(false)
+            ));
+
+            timeline.setCycleCount(1); // Run only once
+            timeline.play();
+        }
     }
 
 

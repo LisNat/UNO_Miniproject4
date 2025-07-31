@@ -37,18 +37,25 @@ public class ThreadPlayMachine extends Thread {
         while (!gameUno.isGameOver() && !Thread.currentThread().isInterrupted()) {
             if (hasPlayerPlayed) {
                 try {
-                    Thread.sleep(2000);
-
-                    if (gameUno.isGameOver() || Thread.currentThread().isInterrupted()) {
-                        return;
-                    }
-
+                    // Verificamos si se debe omitir el turno de la máquina
                     if (gameUno.isSkipMachineTurn()) {
                         gameUno.clearSkipMachineTurn();
                         hasPlayerPlayed = false;
                         continue;
                     }
 
+                    // Mostrar la label "Turno de la máquina..." por 1 segundo
+                    Platform.runLater(() -> gameUnocontroller.showMachineTurnTemporarily());
+
+                    // Esperar 1 segundo para mostrar el mensaje
+                    Thread.sleep(1000);
+
+                    // Verificación adicional por si termina el juego durante la pausa
+                    if (gameUno.isGameOver() || Thread.currentThread().isInterrupted()) {
+                        return;
+                    }
+
+                    // Jugar la carta
                     putCardOnTheTable();
 
                     if (gameUno.isSkipHumanTurn()) {
@@ -77,10 +84,8 @@ public class ThreadPlayMachine extends Thread {
                     tableImageView.setImage(card.getImage());
                     machinePlayer.removeCard(i);
 
-                    // Color actual (antes de cambio si es WILD)
                     String colorToSet = card.getColor();
 
-                    // Si es WILD o +4, cambiamos color aleatoriamente
                     if ("WILD".equals(card.getValue()) || "+4".equals(card.getValue())) {
                         String[] colors = {"RED", "GREEN", "BLUE", "YELLOW"};
                         String selectedColor = colors[(int)(Math.random() * colors.length)];
@@ -109,7 +114,6 @@ public class ThreadPlayMachine extends Thread {
             }
         }
 
-        // Máquina no pudo jugar, toma carta
         try {
             Card drawnCard = deck.takeCard();
             machinePlayer.addCard(drawnCard);
