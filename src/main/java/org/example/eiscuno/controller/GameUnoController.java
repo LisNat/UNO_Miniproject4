@@ -63,6 +63,7 @@ public class GameUnoController implements IGameEventListener {
 
     @FXML
     private Button buttonUno;
+
     private Player humanPlayer;
     private Player machinePlayer;
     private Deck deck;
