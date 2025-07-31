@@ -2,8 +2,7 @@ package org.example.eiscuno.model.card;
 
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import org.example.eiscuno.model.unoenum.EISCUnoEnum;
-import org.example.eiscuno.model.prototype.Prototype;
+import org.example.eiscuno.model.prototype.IPrototype;
 
 import java.io.Serializable;
 
@@ -15,7 +14,7 @@ import java.io.Serializable;
  * This class also implements the Prototype pattern to allow card cloning,
  * and ensures compatibility with Java serialization (excluding transient JavaFX elements).
  */
-public class Card implements Serializable, Prototype<Card> {
+public class Card implements Serializable, IPrototype<Card> {
     private String url;
     private String value;
     private String color;
