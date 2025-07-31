@@ -179,6 +179,7 @@ public class GameUnoController implements IGameEventListener {
             this.deck = new Deck();
             this.table = new Table();
             this.gameUno = new GameUno(this.humanPlayer, this.machinePlayer, this.deck, this.table);
+            humanPlayer.setPlayerName(Arrays.toString(planeTextFileHandler.read("PlayerData.txt")));
         }
 
         this.posInitCardToShow = 0;
@@ -859,7 +860,7 @@ public class GameUnoController implements IGameEventListener {
     public void updateCardCounter() {
         int humanCardCount = humanPlayer.getCardCount();
         int machineCardCount = machinePlayer.getCardCount();
-        cardCountLabel.setText("Máquina: " + machineCardCount + "\nJugador: " + humanCardCount);
+        cardCountLabel.setText("Máquina: " + machineCardCount + "\n" + humanPlayer.getPlayerName() + ": " + humanCardCount);
     }
     /**
      * Displays the machine's turn label for a short duration (1 second)

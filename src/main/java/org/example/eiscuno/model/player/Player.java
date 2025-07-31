@@ -8,10 +8,11 @@ import java.io.Serializable;
 /**
  * Represents a player in the Uno game.
  */
-public class Player implements IPlayer, Serializable {
+public class Player implements IPlayer, Serializable  {
     private ArrayList<Card> cardsPlayer;
     private String typePlayer;
     private final CardChecker cardChecker;
+    private String playerName;
     /**
      * Constructs a Player object with a specified player type.
      *
@@ -24,6 +25,7 @@ public class Player implements IPlayer, Serializable {
         this.cardsPlayer = new ArrayList<Card>();
         this.typePlayer = typePlayer;
         this.cardChecker = new CardChecker();
+        this.playerName = "";
     }
     /**
      * Utility class responsible for checking if a player has any playable cards.
@@ -124,6 +126,20 @@ public class Player implements IPlayer, Serializable {
      */
     public int getCardCount() {
         return cardsPlayer.size();
+    }
+    /**
+     * Returns the player's name.
+     *
+     * @return the player name.
+     */
+    public String getPlayerName() {
+        return playerName;
+    }
+    /**
+     * Configure the player's name.
+     */
+    public void setPlayerName(String playerName) {
+        this.playerName = playerName;
     }
 }
 

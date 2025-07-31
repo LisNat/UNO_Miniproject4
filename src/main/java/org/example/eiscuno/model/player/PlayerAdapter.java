@@ -11,7 +11,7 @@ import java.util.ArrayList;
  * This class implements the IPlayer interface by internally delegating
  * all method calls to a Player instance.
  */
-public class PlayerAdapter implements IPlayer {
+public abstract class PlayerAdapter implements IPlayer {
 
     private final Player player;
 
