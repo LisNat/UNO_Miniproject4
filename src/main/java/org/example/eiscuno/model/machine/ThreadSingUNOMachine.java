@@ -44,6 +44,7 @@ public class ThreadSingUNOMachine implements Runnable{
     public void interrupt() {
         running = false;
     }
+
     /**
      * Checks if the human player has exactly one card left,
      * and prints "UNO" to the console if true.
