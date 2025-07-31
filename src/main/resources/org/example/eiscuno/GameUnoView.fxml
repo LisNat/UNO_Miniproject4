@@ -67,32 +67,11 @@
             <Pane prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
                <children>
                   <!-- Imagen de la carta en juego -->
-                  <ImageView fx:id="tableImageView"
-                             fitHeight="170.0" fitWidth="120.0"
-                             layoutX="65.0" layoutY="40.0"
-                             pickOnBounds="true" preserveRatio="true" />
+                  <ImageView fx:id="tableImageView" fitHeight="170.0" fitWidth="120.0" layoutX="65.0" layoutY="40.0" pickOnBounds="true" preserveRatio="true" />
 
                   <!-- Recuadro de color (figura 2D) -->
-                  <Pane fx:id="colorIndicatorBox"
-                        layoutX="190.0" layoutY="40.0"
-                        prefHeight="60.0" prefWidth="60.0" />
-
-                  <!-- Contador de cartas debajo del recuadro -->
-                  <Label fx:id="cardCountLabel"
-                         layoutX="190.0" layoutY="105.0"
-                         prefWidth="100.0"
-                         text="Máquina: 0&#10;Jugador: 0"
-                         styleClass="card-counter-label"
-                         wrapText="true"
-                         alignment="CENTER"/>
-                  <Label fx:id="turnLabel"
-                         layoutX="200.0" layoutY="160.0"
-                         prefWidth="100.0"
-                         text="Turno de la    máquina..."
-                         styleClass="card-counter-label"
-                         wrapText="true"
-                         alignment="CENTER"
-                         visible="false" />
+                  <Pane fx:id="colorIndicatorBox" layoutX="190.0" layoutY="40.0" prefHeight="60.0" prefWidth="60.0" />
+                  <Label fx:id="turnLabel" alignment="CENTER" layoutX="200.0" layoutY="134.0" prefWidth="100.0" styleClass="card-counter-label" text="Turno de la    máquina..." visible="false" wrapText="true" />
                </children>
             </Pane>
          </center>
@@ -109,6 +88,12 @@
                         </ImageView>
                      </graphic>
                   </Button>
+
+                  <!-- Contador de cartas debajo del recuadro -->
+                  <Label fx:id="cardCountLabel" alignment="CENTER" layoutX="14.0" layoutY="42.0" prefWidth="100.0" styleClass="card-counter-label" text="Máquina: 0&#10;Jugador: 0" wrapText="true">
+                     <font>
+                        <Font name="System Bold" size="12.0" />
+                     </font></Label>
                </children>
             </Pane>
          </right>

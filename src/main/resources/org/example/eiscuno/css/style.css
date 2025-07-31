@@ -73,7 +73,7 @@
 
 .card-counter-label {
     -fx-text-fill: black;
-    -fx-font-family: "Bernard MT Condensed";
+    -fx-font-family: "Comic Sans MS", "Segoe UI", cursive;
     -fx-font-size: 18px;
     -fx-effect: dropshadow( gaussian , white , 2, 0.0 , 0 , 0 );
 }

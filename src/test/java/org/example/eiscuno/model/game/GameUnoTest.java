@@ -13,12 +13,27 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Unit tests for {@link GameUno} class functionality.
+ * <p>
+ * Verifies core game mechanics including:
+ * </p>
+ * <ul>
+ *   <li>Game initialization and setup</li>
+ *   <li>Card play validation rules</li>
+ *   <li>Special card behavior</li>
+ *   <li>Exception handling</li>
+ * </ul>
+ */
 class GameUnoTest {
     private GameUno game;
     private Player human;
     private Player machine;
-    private GameUnoController controller;
 
+    /**
+     * Initializes JavaFX environment before all tests.
+     * Required for card image loading functionality.
+     */
     @BeforeAll
     public static void initJavaFx() {
         try {
@@ -27,22 +42,43 @@ class GameUnoTest {
         }
     }
 
+    /**
+     * Sets up test environment before each test method.
+     * Creates fresh game instance with:
+     * <ul>
+     *   <li>New human and machine players</li>
+     *   <li>Fresh deck and table</li>
+     *   <li>New controller instance</li>
+     * </ul>
+     */
     @BeforeEach
     void setUp() {
         human = new Player("HUMAN");
         machine = new Player("MACHINE");
         game = new GameUno(human, machine, new Deck(), new Table());
-        controller = new GameUnoController();
     }
 
+    /**
+     * Tests {@link GameUno#startGame()} initial card distribution.
+     * Verifies that:
+     * <ul>
+     *   <li>Total of 10 cards are dealt (5 to each player)</li>
+     * </ul>
+     */
     @Test
     void testStartGameDealsCards() {
         game.startGame();
         assertEquals(10, human.getCardsPlayer().size() + machine.getCardsPlayer().size());
     }
 
-    // Test para probar el metodo CanPlay()
-    @Test // No se puede jugar una carta no coincidente
+    /**
+     * Tests {@link GameUno#canPlay(Card)} with incompatible cards.
+     * Verifies that:
+     * <ul>
+     *   <li>Cards with mismatched value AND color are rejected</li>
+     * </ul>
+     */
+    @Test
     void testCannotPlayUnmatchedCard() {
         Card topCard = new Card("/org/example/eiscuno/cards-uno/5_blue.png", "5", "BLUE");
         Card cardToPlay = new Card("/org/example/eiscuno/cards-uno/7_red.png", "7", "RED");
@@ -51,6 +87,13 @@ class GameUnoTest {
         assertFalse(game.canPlay(cardToPlay));
     }
 
+    /**
+     * Tests {@link GameUno#canPlay(Card)} with wild cards.
+     * Verifies that:
+     * <ul>
+     *   <li>Wild cards can be played on any card</li>
+     * </ul>
+     */
     @Test
     void testCanPlayWildCard() {
         Card topCard = new Card("/org/example/eiscuno/cards-uno/5_blue.png", "5", "BLUE");
@@ -60,6 +103,13 @@ class GameUnoTest {
         assertTrue(game.canPlay(cardToPlay));
     }
 
+    /**
+     * Tests {@link GameUno#playCard(Card)} with invalid plays.
+     * Verifies that:
+     * <ul>
+     *   <li>Invalid card plays throw {@link InvalidCardPlayException}</li>
+     * </ul>
+     */
     @Test
     void testPlayCardThrowsInvalidPlayException() {
         Card topCard = new Card("/org/example/eiscuno/cards-uno/5_blue.png", "5", "BLUE");
@@ -70,6 +120,13 @@ class GameUnoTest {
         assertThrows(InvalidCardPlayException.class, () -> game.playCard(card));
     }
 
+    /**
+     * Tests {@link GameUno#startGame()} table initialization.
+     * Verifies that:
+     * <ul>
+     *   <li>Starting game places valid card on table</li>
+     * </ul>
+     */
     @Test
     void testStartGameInitializesTopCard() {
         game.startGame();

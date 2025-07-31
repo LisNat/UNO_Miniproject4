@@ -8,7 +8,12 @@ import org.example.eiscuno.model.prototype.Prototype;
 import java.io.Serializable;
 
 /**
- * Represents a card in the Uno game.
+ * Represents a single card in the Uno game.
+ * <p>
+ * Each card has a value (e.g., "5", "REVERSE", "WILD"), a color (e.g., "RED", "BLUE", or "NULL" for wild cards),
+ * and a visual representation through an image loaded from a given URL.
+ * This class also implements the Prototype pattern to allow card cloning,
+ * and ensures compatibility with Java serialization (excluding transient JavaFX elements).
  */
 public class Card implements Serializable, Prototype<Card> {
     private String url;
@@ -20,11 +25,11 @@ public class Card implements Serializable, Prototype<Card> {
     private transient ImageView cardImageView;
 
     /**
-     * Constructs a Card with the specified image URL and name.
+     * Constructs a new Card with the specified image URL, value, and color.
      *
-     * @param url the URL of the card image
-     * @param value of the card
-     * @param color of the card
+     * @param url   the relative path to the card's image resource
+     * @param value the textual value of the card (e.g., number or special action)
+     * @param color the color of the card (e.g., "RED", "BLUE", or "NULL" for wild cards)
      */
     public Card(String url, String value, String color) {
         this.url = url;
@@ -36,16 +41,18 @@ public class Card implements Serializable, Prototype<Card> {
     }
 
     /**
-     * Reconstructs transient fields after deserialization.
+     * Reconstructs JavaFX-related transient fields (image and ImageView)
+     * after deserialization. This method should be called manually
+     * when loading a serialized Card object.
      */
     public void loadTransientFields() {
         this.image = new Image(String.valueOf(getClass().getResource(url)));
         this.cardImageView = createCardImageView();
     }
     /**
-     * Creates and configures the ImageView for the card.
+     * Creates and configures the {@code ImageView} used to visually represent the card.
      *
-     * @return the configured ImageView of the card
+     * @return a configured {@code ImageView} with the card image and fixed size
      */
     private ImageView createCardImageView() {
         ImageView card = new ImageView(this.image);
@@ -56,60 +63,69 @@ public class Card implements Serializable, Prototype<Card> {
     }
 
     /**
-     * Gets the ImageView representation of the card.
+     * Returns the visual {@code ImageView} representation of the card.
      *
-     * @return the ImageView of the card
+     * @return the card's {@code ImageView}
      */
     public ImageView getCard() {
         return cardImageView;
     }
 
     /**
-     * Gets the image of the card.
+     * Returns the {@code Image} object of the card.
      *
-     * @return the Image of the card
+     * @return the card's JavaFX {@code Image}
      */
     public Image getImage() {
         return image;
     }
+
     /**
-     * Returns the value of the card (e.g., number or special action).
+     * Gets the card's value (e.g., "7", "REVERSE", "WILD").
      *
-     * @return the card's value as a String
+     * @return the value of the card
      */
     public String getValue() {
         return value;
     }
+
     /**
-     * Returns the color of the card (e.g., red, blue, green, yellow, or none for wild cards).
+     * Gets the card's color (e.g., "RED", "BLUE", or "NULL" for wild cards).
      *
-     * @return the card's color as a String
+     * @return the color of the card
      */
     public String getColor() {
         return color;
     }
+
     /**
-     * Sets the color of the card.
+     * Updates the card's color.
      *
-     * @param color the new color to assign to the card
+     * @param color the new color to assign (used especially for wild cards)
      */
     public void setColor(String color) {
         this.color = color;
     }
+
     /**
-     * Returns the URL associated with the card, typically used for displaying its image.
+     * Gets the URL string used to load the card image.
      *
-     * @return the card's image URL as a String
+     * @return the image URL associated with the card
      */
     public String getUrl() {return url;}
+
     /**
-     * Determines if this card can be legally played over the given top card
-     * according to UNO rules.
+     * Determines whether this card can be legally played over another card,
+     * based on standard Uno rules.
      * <p>
-     * Wild and +4 cards can always be played. Otherwise, the card can be played
-     * if it shares the same color or value with the top card.
+     * A card can be played if:
+     * <ul>
+     *     <li>It is a wild card ("WILD" or "+4")</li>
+     *     <li>It matches the top card by color</li>
+     *     <li>It matches the top card by value</li>
+     * </ul>
      *
-     * @param topCard the card currently on top of the discard pile
+     * @param topCard the current card on the discard pile
      * @return true if this card can be played, false otherwise
      */
     public boolean canBePlayedOver(Card topCard) {
@@ -129,6 +145,13 @@ public class Card implements Serializable, Prototype<Card> {
                 this.value.equals(topCard.getValue());
     }
 
+    /**
+     * Creates and returns a deep copy of this card instance.
+     * <p>
+     * This supports the Prototype design pattern, enabling cards to be cloned when needed.
+     *
+     * @return a new {@code Card} object with the same properties as this one
+     */
     @Override
     public Card clone() {
         Card clonedCard = new Card(this.url, this.value, this.color);

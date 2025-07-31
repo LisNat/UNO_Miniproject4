@@ -16,7 +16,7 @@ import java.io.IOException;
  * This includes displaying the result (win or lose), applying UI animations,
  * and handling user actions such as replaying or exiting the game.
 
- * @author El/la responsable.
+ * @author Liseth Natalia Rivera Córdoba.
  * @version 2.0
  * @since version 3.0
  * @see GameUnoStage

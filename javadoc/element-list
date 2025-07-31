@@ -1,0 +1,16 @@
+module:org.example.eiscuno
+org.example.eiscuno
+org.example.eiscuno.controller
+org.example.eiscuno.model.card
+org.example.eiscuno.model.card.effects
+org.example.eiscuno.model.deck
+org.example.eiscuno.model.exceptions
+org.example.eiscuno.model.game
+org.example.eiscuno.model.machine
+org.example.eiscuno.model.planeTextFiles
+org.example.eiscuno.model.player
+org.example.eiscuno.model.prototype
+org.example.eiscuno.model.serializable
+org.example.eiscuno.model.table
+org.example.eiscuno.model.unoenum
+org.example.eiscuno.view
