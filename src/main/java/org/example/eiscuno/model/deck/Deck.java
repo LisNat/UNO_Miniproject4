@@ -15,7 +15,9 @@ public class Deck implements Serializable {
     private Stack<Card> deckOfCards;
 
     /**
-     * Constructs a new deck of Uno cards and initializes it.
+     * Returns the stack of cards representing the current deck.
+     *
+     * @return the stack of cards in the deck
      */
     public Deck() {
         deckOfCards = new Stack<>();
@@ -23,7 +25,9 @@ public class Deck implements Serializable {
     }
 
     /**
-     * Initializes the deck with cards based on the EISCUnoEnum values.
+     * Initializes the UNO deck by creating cards based on the values defined in the {@code EISCUnoEnum} enum.
+     * Only valid cards (colored, special, and wild) are added to the deck.
+     * After all cards are added, the deck is shuffled.
      */
     private void initializeDeck() {
         for (EISCUnoEnum cardEnum : EISCUnoEnum.values()) {
@@ -45,7 +49,13 @@ public class Deck implements Serializable {
         }
         Collections.shuffle(deckOfCards);
     }
-
+    /**
+     * Extracts the value of a card based on its enum name.
+     * This includes numeric values, special actions like SKIP and REVERSE, and wild cards.
+     *
+     * @param name the name of the enum constant representing the card
+     * @return the corresponding card value as a String, or "UNKNOWN" if no match is found
+     */
     private String getCardValue(String name) {
         if (name.endsWith("0")){
             return "0";
@@ -84,7 +94,13 @@ public class Deck implements Serializable {
         }
 
     }
-
+    /**
+     * Determines the color of a card based on its enum name.
+     * Wild cards (e.g., WILD, +4) return {@code null} as they have no fixed color.
+     *
+     * @param name the name of the enum constant representing the card
+     * @return the color of the card as a String, or {@code null} for wild cards
+     */
     private String getCardColor(String name){
         if (name.contains("GREEN")) {
             return "GREEN";
@@ -100,10 +116,10 @@ public class Deck implements Serializable {
     }
 
     /**
-     * Takes a card from the top of the deck.
+     * Removes and returns the top card from the deck.
      *
-     * @return the card from the top of the deck
-     * @throws IllegalStateException if the deck is empty
+     * @return the top {@code Card} from the deck
+     * @throws EmptyDeckException if the deck is empty and no card can be drawn
      */
     public Card takeCard() throws EmptyDeckException {
         if (deckOfCards.isEmpty()) {
@@ -120,8 +136,16 @@ public class Deck implements Serializable {
     public boolean isEmpty() {
         return deckOfCards.isEmpty();
     }
-
+    /**
+     * Returns the entire stack of cards representing the current deck.
+     *
+     * @return a {@code Stack<Card>} containing all cards in the deck
+     */
     public Stack<Card> getDeckOfCards() {return deckOfCards;}
-
+    /**
+     * Sets the deck to the given stack of cards.
+     *
+     * @param deckOfCards the {@code Stack<Card>} to be used as the new deck
+     */
     public void setDeckOfCards(Stack<Card> deckOfCards) {this.deckOfCards = deckOfCards;}
 }

@@ -5,8 +5,9 @@ import org.example.eiscuno.model.game.GameUno;
 import org.example.eiscuno.model.player.Player;
 
 /**
- * Ejemplo de extensión siguiendo el principio Open/Closed
- * Nuevo efecto que se puede agregar sin modificar código existente
+ * Represents the effect of a "WILD" card in the UNO game.
+ * This card allows the player to change the current color.
+ * The color change itself is handled externally (e.g., in the controller).
  */
 public class WildEffect implements ICardEffect {
 

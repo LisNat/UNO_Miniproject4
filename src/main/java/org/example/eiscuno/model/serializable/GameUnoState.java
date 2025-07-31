@@ -5,7 +5,11 @@ import org.example.eiscuno.model.player.Player;
 import org.example.eiscuno.model.table.Table;
 
 import java.io.Serializable;
-
+/**
+ * Represents the complete state of an UNO game, including the deck, table, players,
+ * turn information, and blocked statuses. This class is serializable to allow saving
+ * and loading the game state.
+ */
 public class GameUnoState implements Serializable {
 
     private Deck deck;
@@ -16,7 +20,18 @@ public class GameUnoState implements Serializable {
     private boolean isHumanTurn;
     private boolean isHumanBlocked;
     private boolean isMachineBlocked;
-
+    /**
+     * Constructs a new {@code GameUnoState} with the specified game components and statuses.
+     *
+     * @param deck the deck of cards used in the game
+     * @param table the current state of the table with played cards
+     * @param humanPlayer the human player in the game
+     * @param machinePlayer the machine player in the game
+     * @param gameOver indicates if the game has ended
+     * @param isHumanTurn indicates if it is currently the human player's turn
+     * @param isHumanBlocked indicates if the human player is currently blocked from playing
+     * @param isMachineBlocked indicates if the machine player is currently blocked from playing
+     */
     public GameUnoState(
             Deck deck,
             Table table,
@@ -37,7 +52,7 @@ public class GameUnoState implements Serializable {
         this.isMachineBlocked = isMachineBlocked;
     }
 
-    // Getters y Setters
+    // Getters and Setters
 
     public Deck getDeck() { return deck; }
     public Table getTable() { return table; }

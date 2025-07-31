@@ -5,7 +5,8 @@ import org.example.eiscuno.model.game.GameUno;
 import org.example.eiscuno.model.player.Player;
 
 /**
- * Efecto para cartas +4
+ * Represents the effect of a "+4" card in the UNO game.
+ * When applied, the opponent draws four cards and loses their turn.
  */
 public class DrawFourEffect implements ICardEffect {
 
